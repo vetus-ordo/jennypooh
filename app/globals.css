@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-warm: #F9F8F6;
+  --accent-sage: #7B9E89;
+  --accent-terra: #D98C71;
+  --text-main: #2F353B;
+  --card-shadow: 0 10px 30px -5px rgba(123, 158, 137, 0.2);
+}
+
+body {
+  background-color: var(--bg-warm);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.blueprint-card {
+  @apply bg-white border border-slate-200 rounded-3xl p-6 transition-all duration-300;
+  box-shadow: var(--card-shadow);
+}
+
+.blueprint-card:hover {
+  @apply -translate-y-2 border-slate-300;
+  box-shadow: 0 20px 40px -10px rgba(123, 158, 137, 0.3);
+}
+
+.btn-blueprint {
+  @apply px-8 py-3 rounded-full font-bold text-white transition-all duration-200;
+  background-color: var(--accent-sage);
+}
+
+.btn-blueprint:hover {
+  @apply scale-105;
+  background-color: #6a8b78;
+}
