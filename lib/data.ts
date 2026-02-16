@@ -15,189 +15,189 @@ export interface Category {
 export const categoryData: Record<string, Category> = {
   // MONEY & FINANCE
   'finance-philosophy': {
-    name: 'The Treasury Department',
-    instruction: 'How do we stack our gold? Rank your ideal setup:',
+    name: 'Money Management',
+    instruction: 'How should we handle our money?',
     icon: '💰',
     items: [
-      { id: 'total-fusion', name: 'Total Fusion (100% Joint)', image: '/money/fusion.jpg' },
-      { id: 'hybrid-model', name: 'Hybrid (Joint Bills + Separate Fun)', image: '/money/hybrid.jpg' },
-      { id: 'roommate-style', name: 'Venmo Vibes (Separate + Split)', image: '/money/venmo.jpg' },
-      { id: 'allowance', name: 'One Earner / One Spender', image: '/money/allowance.jpg' },
-      { id: 'proportional', name: 'Proportional (Earn more = Pay more)', image: '/money/percent.jpg' }
+      { id: 'total-fusion', name: 'Everything goes into one joint account', image: '/money/fusion.jpg' },
+      { id: 'hybrid-model', name: 'Joint account for bills, separate for everything else', image: '/money/hybrid.jpg' },
+      { id: 'roommate-style', name: 'Keep everything separate and split bills', image: '/money/venmo.jpg' },
+      { id: 'allowance', name: 'One person manages everything', image: '/money/allowance.jpg' },
+      { id: 'proportional', name: 'Contribute based on income percentage', image: '/money/percent.jpg' }
     ]
   },
   'purchase-permission': {
-    name: 'The "Babe, Can I?" Bar',
-    instruction: 'At what price point must we check in before buying?',
+    name: 'Big Purchases',
+    instruction: 'When do we need to check with each other before buying something?',
     icon: '💳',
     items: [
-      { id: 'low-bar', name: '$50 (The "I ask about everything" tier)', image: '/money/50.jpg' },
-      { id: 'standard', name: '$100 (The Target Run Limit)', image: '/money/100.jpg' },
-      { id: 'trust', name: '$250 (The "Serious Treat" Limit)', image: '/money/250.jpg' },
-      { id: 'big-ticket', name: '$500 (Major Purchases Only)', image: '/money/500.jpg' },
-      { id: 'no-limit', name: 'No Limit (Total Chaos/Trust)', image: '/money/infinity.jpg' }
+      { id: 'low-bar', name: 'Anything over $50', image: '/money/50.jpg' },
+      { id: 'standard', name: 'Anything over $100', image: '/money/100.jpg' },
+      { id: 'trust', name: 'Anything over $250', image: '/money/250.jpg' },
+      { id: 'big-ticket', name: 'Anything over $500', image: '/money/500.jpg' },
+      { id: 'no-limit', name: 'We trust each other completely', image: '/money/infinity.jpg' }
     ]
   },
   'fun-money': {
-    name: 'The Discretionary Fund',
-    instruction: 'Ideally, how much "Guilt-Free" money does each person get monthly?',
+    name: 'Personal Spending',
+    instruction: 'How much should each person get for their own stuff each month?',
     icon: '💸',
     items: [
-      { id: 'tier-1', name: '$100 (Coffee & Snacks)', image: '/money/t1.jpg' },
-      { id: 'tier-2', name: '$300 (The Hobbyist)', image: '/money/t2.jpg' },
-      { id: 'tier-3', name: '$500 (The Fashionista)', image: '/money/t3.jpg' },
-      { id: 'tier-4', name: '$1,000 (The Baller)', image: '/money/t4.jpg' },
-      { id: 'tier-5', name: 'Unlimited (We just vibe)', image: '/money/t5.jpg' }
+      { id: 'tier-1', name: '$100', image: '/money/t1.jpg' },
+      { id: 'tier-2', name: '$300', image: '/money/t2.jpg' },
+      { id: 'tier-3', name: '$500', image: '/money/t3.jpg' },
+      { id: 'tier-4', name: '$1,000', image: '/money/t4.jpg' },
+      { id: 'tier-5', name: 'No set amount', image: '/money/t5.jpg' }
     ]
   },
   'windfall-strategy': {
-    name: 'The Windfall Protocol',
-    instruction: 'We get a surprise $10k. What is the PRIORITY?',
+    name: 'Extra Money',
+    instruction: 'We suddenly get $10,000. What should we do with it?',
     icon: '🧧',
     items: [
-      { id: 'invest', name: 'Boring Index Funds (Future Us)', image: '/money/stocks.jpg' },
-      { id: 'travel', name: 'Epic Luxury Vacation (Present Us)', image: '/money/travel.jpg' },
-      { id: 'debt', name: 'Kill Any/All Debt', image: '/money/debt.jpg' },
-      { id: 'home', name: 'Home Improvement / Down Payment', image: '/money/home.jpg' },
-      { id: 'splurge', name: 'Shopping Spree', image: '/money/shop.jpg' }
+      { id: 'invest', name: 'Invest it', image: '/money/stocks.jpg' },
+      { id: 'travel', name: 'Take an amazing vacation', image: '/money/travel.jpg' },
+      { id: 'debt', name: 'Pay off debt', image: '/money/debt.jpg' },
+      { id: 'home', name: 'Put it toward a house', image: '/money/home.jpg' },
+      { id: 'splurge', name: 'Spend it on things we want', image: '/money/shop.jpg' }
     ]
   },
 
   // FAMILY & SOCIAL
   'holiday-treaty': {
-    name: 'The Holiday Treaty',
-    instruction: 'It is Thanksgiving. Where are we?',
+    name: 'Holidays',
+    instruction: 'Where do we spend Thanksgiving and Christmas?',
     icon: '🦃',
     items: [
-      { id: 'rotation', name: 'Strict Rotation (Year A: Yours, Year B: Mine)', image: '/family/swap.jpg' },
-      { id: 'host-all', name: 'We Host Everyone', image: '/family/host.jpg' },
-      { id: 'marathon', name: 'The Marathon (Lunch @ Yours, Dinner @ Mine)', image: '/family/split.jpg' },
-      { id: 'escape', name: 'We Travel Alone (Island Christmas)', image: '/family/island.jpg' },
-      { id: 'open-house', name: 'Open House (Friends welcome)', image: '/family/friends.jpg' }
+      { id: 'rotation', name: 'Alternate between our families each year', image: '/family/swap.jpg' },
+      { id: 'host-all', name: 'Host everyone at our place', image: '/family/host.jpg' },
+      { id: 'marathon', name: 'Hit both families in one day', image: '/family/split.jpg' },
+      { id: 'escape', name: 'Skip family and travel somewhere', image: '/family/island.jpg' },
+      { id: 'open-house', name: 'Include friends too', image: '/family/friends.jpg' }
     ]
   },
   'in-law-frequency': {
-    name: 'Parental Proximity',
-    instruction: 'How often do we ideally see the in-laws?',
+    name: 'Seeing Parents',
+    instruction: 'How often should we see our parents?',
     icon: '👵',
     items: [
-      { id: 'weekly', name: 'Weekly Sunday Dinner', image: '/family/weekly.jpg' },
-      { id: 'monthly', name: 'Once a Month Visit', image: '/family/monthly.jpg' },
-      { id: 'quarterly', name: 'Every Few Months', image: '/family/quarterly.jpg' },
-      { id: 'holidays', name: 'Major Holidays Only', image: '/family/holiday.jpg' },
-      { id: 'spontaneous', name: 'Pop-ins Welcome Anytime', image: '/family/door.jpg' }
+      { id: 'weekly', name: 'Every week', image: '/family/weekly.jpg' },
+      { id: 'monthly', name: 'Once a month', image: '/family/monthly.jpg' },
+      { id: 'quarterly', name: 'Every few months', image: '/family/quarterly.jpg' },
+      { id: 'holidays', name: 'Just holidays', image: '/family/holiday.jpg' },
+      { id: 'spontaneous', name: 'They can drop by whenever', image: '/family/door.jpg' }
     ]
   },
   'sibling-strategy': {
-    name: 'The Sibling Strategy',
-    instruction: 'How involved are siblings in our lives?',
+    name: 'Siblings',
+    instruction: 'How close are we with our siblings?',
     icon: '👯',
     items: [
-      { id: 'besties', name: 'Best Friends (Daily Chats)', image: '/family/besties.jpg' },
-      { id: 'vacation', name: 'Travel Buddies', image: '/family/trip.jpg' },
-      { id: 'occasional', name: 'Friendly Catch-ups', image: '/family/dinner.jpg' },
-      { id: 'holidays', name: 'See them at Christmas', image: '/family/xmas.jpg' },
-      { id: 'babysitters', name: 'Strictly "Aunt/Uncle" duty', image: '/family/aunt.jpg' }
+      { id: 'besties', name: 'Talk to them every day', image: '/family/besties.jpg' },
+      { id: 'vacation', name: 'Vacation together regularly', image: '/family/trip.jpg' },
+      { id: 'occasional', name: 'Grab dinner every few months', image: '/family/dinner.jpg' },
+      { id: 'holidays', name: 'Only see them at holidays', image: '/family/xmas.jpg' },
+      { id: 'babysitters', name: 'Mainly when we need babysitting', image: '/family/aunt.jpg' }
     ]
   },
 
   // HOME & LIVING
   'location-scouting': {
-    name: 'The Forever Fortress',
-    instruction: 'Where do we plant our flag?',
+    name: 'Where We Live',
+    instruction: 'What kind of place do we want to live?',
     icon: '📍',
     items: [
-      { id: 'city', name: 'Downtown Penthouse', image: '/home/city.jpg' },
-      { id: 'suburb', name: 'Suburban House & Yard', image: '/home/suburb.jpg' },
-      { id: 'rural', name: 'Quiet Farmhouse', image: '/home/farm.jpg' },
-      { id: 'coastal', name: 'Beach House', image: '/home/beach.jpg' },
-      { id: 'nomad', name: 'Digital Nomads (New city monthly)', image: '/home/travel.jpg' }
+      { id: 'city', name: 'City apartment or condo', image: '/home/city.jpg' },
+      { id: 'suburb', name: 'House in the suburbs', image: '/home/suburb.jpg' },
+      { id: 'rural', name: 'Somewhere quiet and rural', image: '/home/farm.jpg' },
+      { id: 'coastal', name: 'Near the beach', image: '/home/beach.jpg' },
+      { id: 'nomad', name: 'Move around frequently', image: '/home/travel.jpg' }
     ]
   },
   'chore-division': {
-    name: 'The Grunt Work',
-    instruction: 'Which chore do you LEAST mind doing?',
+    name: 'Chores',
+    instruction: 'Which chore would you rather do?',
     icon: '🧹',
     items: [
-      { id: 'dishes', name: 'Dishes & Kitchen', image: '/chores/dishes.jpg' },
-      { id: 'laundry', name: 'Laundry (Wash/Fold/Away)', image: '/chores/laundry.jpg' },
-      { id: 'bathrooms', name: 'Scrubbing Toilets', image: '/chores/toilet.jpg' },
-      { id: 'floors', name: 'Vacuuming & Mopping', image: '/chores/vacuum.jpg' },
-      { id: 'admin', name: 'Bills & Scheduling', image: '/chores/bills.jpg' }
+      { id: 'dishes', name: 'Dishes and kitchen cleanup', image: '/chores/dishes.jpg' },
+      { id: 'laundry', name: 'Laundry', image: '/chores/laundry.jpg' },
+      { id: 'bathrooms', name: 'Cleaning bathrooms', image: '/chores/toilet.jpg' },
+      { id: 'floors', name: 'Vacuuming and mopping', image: '/chores/vacuum.jpg' },
+      { id: 'admin', name: 'Paying bills and scheduling', image: '/chores/bills.jpg' }
     ]
   },
   'mess-tolerance': {
-    name: 'Clutter Threshold',
-    instruction: 'How "lived in" is the house?',
+    name: 'Cleanliness',
+    instruction: 'How clean should the house be?',
     icon: '🧺',
     items: [
-      { id: 'museum', name: 'Museum Grade (Zero items on counters)', image: '/home/clean.jpg' },
-      { id: 'tidy', name: 'Tidy (Everything has a place)', image: '/home/tidy.jpg' },
-      { id: 'cozy', name: 'Cozy Clutter (Books/Blankets)', image: '/home/messy.jpg' },
-      { id: 'chaos', name: 'Creative Chaos', image: '/home/chaos.jpg' },
-      { id: 'hired', name: 'We hire help so we don’t fight', image: '/home/maid.jpg' }
+      { id: 'museum', name: 'Spotless at all times', image: '/home/clean.jpg' },
+      { id: 'tidy', name: 'Neat and organized', image: '/home/tidy.jpg' },
+      { id: 'cozy', name: 'Lived-in but not dirty', image: '/home/messy.jpg' },
+      { id: 'chaos', name: 'Messy is fine', image: '/home/chaos.jpg' },
+      { id: 'hired', name: 'We should hire someone', image: '/home/maid.jpg' }
     ]
   },
   'sleep-sanctuary': {
-    name: 'Sleep Sanctuary',
-    instruction: 'What is the bedroom rule?',
+    name: 'Bedroom',
+    instruction: 'What happens in the bedroom at night?',
     icon: '🛌',
     items: [
-      { id: 'tv', name: 'Fall asleep to Netflix', image: '/sleep/tv.jpg' },
-      { id: 'scroll', name: 'Phone scrolling side-by-side', image: '/sleep/phone.jpg' },
-      { id: 'cuddle', name: 'Cuddle Puddle (Touching all night)', image: '/sleep/cuddle.jpg' },
-      { id: 'blackout', name: 'Silence & Blackout Mask', image: '/sleep/mask.jpg' },
-      { id: 'pets', name: 'Pets in the bed', image: '/sleep/dog.jpg' }
+      { id: 'tv', name: 'Watch TV until we fall asleep', image: '/sleep/tv.jpg' },
+      { id: 'scroll', name: 'Scroll on our phones', image: '/sleep/phone.jpg' },
+      { id: 'cuddle', name: 'Cuddle the whole night', image: '/sleep/cuddle.jpg' },
+      { id: 'blackout', name: 'Pitch black and silent', image: '/sleep/mask.jpg' },
+      { id: 'pets', name: 'Pets sleep in bed with us', image: '/sleep/dog.jpg' }
     ]
   },
   'guest-policy': {
-    name: 'Open Door Policy',
-    instruction: 'A friend wants to crash. What is the vibe?',
+    name: 'House Guests',
+    instruction: 'Your friend wants to stay at our place. How do you feel?',
     icon: '🛋️',
     items: [
-      { id: 'anytime', name: 'Come over anytime!', image: '/social/open.jpg' },
-      { id: 'weekend', name: 'Weekends Only', image: '/social/weekend.jpg' },
-      { id: 'notice', name: '1 Week Notice Minimum', image: '/social/calendar.jpg' },
-      { id: 'hotel', name: 'I will pay for their Hotel', image: '/social/hotel.jpg' },
-      { id: 'dinner', name: 'Dinner is fine, no overnights', image: '/social/dinner.jpg' }
+      { id: 'anytime', name: 'They can come whenever', image: '/social/open.jpg' },
+      { id: 'weekend', name: 'Only on weekends', image: '/social/weekend.jpg' },
+      { id: 'notice', name: 'Need at least a week notice', image: '/social/calendar.jpg' },
+      { id: 'hotel', name: 'I'd rather pay for their hotel', image: '/social/hotel.jpg' },
+      { id: 'dinner', name: 'Dinner is fine, but no sleepovers', image: '/social/dinner.jpg' }
     ]
   },
 
   // CONFLICT & VIBE
   'conflict-style': {
-    name: 'The "Talk" Protocol',
-    instruction: 'We are fighting. How do we fix it?',
+    name: 'Fighting',
+    instruction: 'We just had a fight. What do you need?',
     icon: '🏳️',
     items: [
-      { id: 'space', name: 'Give me space to cool off', image: '/love/space.jpg' },
-      { id: 'solve', name: 'Solve it NOW (No sleeping angry)', image: '/love/talk.jpg' },
-      { id: 'touch', name: 'Just hold me (Reconnect first)', image: '/love/hug.jpg' },
-      { id: 'write', name: 'Write it down (Letters/Texts)', image: '/love/letter.jpg' },
-      { id: 'peace', name: 'Pretend it didn’t happen', image: '/love/peace.jpg' }
+      { id: 'space', name: 'Space to cool down', image: '/love/space.jpg' },
+      { id: 'solve', name: 'To talk it out right now', image: '/love/talk.jpg' },
+      { id: 'touch', name: 'Physical comfort first', image: '/love/hug.jpg' },
+      { id: 'write', name: 'To write down my thoughts', image: '/love/letter.jpg' },
+      { id: 'peace', name: 'To just move on', image: '/love/peace.jpg' }
     ]
   },
   'social-battery': {
-    name: 'Friday Night Vibe',
-    instruction: 'It has been a long week. What is the move?',
+    name: 'Friday Night',
+    instruction: 'It's Friday after a long week. What sounds good?',
     icon: '🔋',
     items: [
-      { id: 'out', name: 'Dinner & Drinks Out', image: '/social/cocktail.jpg' },
-      { id: 'couch', name: 'Rot Mode (Takeout & Silence)', image: '/social/couch.jpg' },
-      { id: 'host', name: 'Host Game Night', image: '/social/game.jpg' },
-      { id: 'active', name: 'Evening Walk / Night Gym', image: '/social/run.jpg' },
-      { id: 'movie', name: 'Movie Theater Date', image: '/social/cinema.jpg' }
+      { id: 'out', name: 'Go out for dinner and drinks', image: '/social/cocktail.jpg' },
+      { id: 'couch', name: 'Stay in and order takeout', image: '/social/couch.jpg' },
+      { id: 'host', name: 'Have friends over', image: '/social/game.jpg' },
+      { id: 'active', name: 'Go for a walk or to the gym', image: '/social/run.jpg' },
+      { id: 'movie', name: 'See a movie', image: '/social/cinema.jpg' }
     ]
   },
   'vacation-mode': {
-    name: 'Vacation Philosophy',
-    instruction: 'We are in Europe. What is the schedule?',
+    name: 'Vacation Style',
+    instruction: 'We're on vacation. What's the plan?',
     icon: '✈️',
     items: [
-      { id: 'relax', name: 'Pool/Beach & Chill (0 plans)', image: '/travel/pool.jpg' },
-      { id: 'foodie', name: 'Restaurant Hopping', image: '/travel/food.jpg' },
-      { id: 'explorer', name: '20k Steps/Day (Museums)', image: '/travel/walk.jpg' },
-      { id: 'adventure', name: 'Adrenaline (Hiking/Diving)', image: '/travel/hike.jpg' },
-      { id: 'luxury', name: 'Spa & Resort Life', image: '/travel/spa.jpg' }
+      { id: 'relax', name: 'Relax by the pool or beach', image: '/travel/pool.jpg' },
+      { id: 'foodie', name: 'Try as many restaurants as possible', image: '/travel/food.jpg' },
+      { id: 'explorer', name: 'See all the museums and attractions', image: '/travel/walk.jpg' },
+      { id: 'adventure', name: 'Do adventurous activities', image: '/travel/hike.jpg' },
+      { id: 'luxury', name: 'Spa and resort relaxation', image: '/travel/spa.jpg' }
     ]
   }
 };
