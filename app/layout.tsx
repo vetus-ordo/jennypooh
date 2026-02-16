@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
 
 export const metadata: Metadata = {
-  title: "The Blueprint | J + A",
-  description: "Designing our life together.",
+  title: "Life Scenarios | Compatibility Quest",
+  description: "Choose your companion and discover your compatibility.",
 };
 
 export default function RootLayout({
