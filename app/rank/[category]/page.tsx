@@ -63,7 +63,6 @@ export default function RankPage() {
   return (
     <main className="max-w-2xl mx-auto px-6 py-16">
       <header className="mb-12 text-center">
-        <div className="text-5xl mb-4">{cat.icon}</div>
         <h1 className="text-4xl font-serif font-bold text-slate-800 mb-2">{cat.name}</h1>
         <p className="text-slate-500 italic">{cat.instruction}</p>
       </header>
