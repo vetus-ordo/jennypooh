@@ -158,7 +158,7 @@ export const categoryData: Record<string, Category> = {
       { id: 'anytime', name: 'They can come whenever', image: '/social/open.jpg' },
       { id: 'weekend', name: 'Only on weekends', image: '/social/weekend.jpg' },
       { id: 'notice', name: 'Need at least a week notice', image: '/social/calendar.jpg' },
-      { id: 'hotel', name: 'I'd rather pay for their hotel', image: '/social/hotel.jpg' },
+      { id: 'hotel', name: 'I would rather pay for their hotel', image: '/social/hotel.jpg' },
       { id: 'dinner', name: 'Dinner is fine, but no sleepovers', image: '/social/dinner.jpg' }
     ]
   },
@@ -178,7 +178,7 @@ export const categoryData: Record<string, Category> = {
   },
   'social-battery': {
     name: 'Friday Night',
-    instruction: 'It's Friday after a long week. What sounds good?',
+    instruction: 'It is Friday after a long week. What sounds good?',
     icon: '🔋',
     items: [
       { id: 'out', name: 'Go out for dinner and drinks', image: '/social/cocktail.jpg' },
@@ -190,7 +190,7 @@ export const categoryData: Record<string, Category> = {
   },
   'vacation-mode': {
     name: 'Vacation Style',
-    instruction: 'We're on vacation. What's the plan?',
+    instruction: 'We are on vacation. What is the plan?',
     icon: '✈️',
     items: [
       { id: 'relax', name: 'Relax by the pool or beach', image: '/travel/pool.jpg' },
