@@ -19,7 +19,6 @@ export default function Home() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-16">
       <header className="text-center mb-16">
-        <div className="text-6xl mb-4">🏠</div>
         <h1 className="text-5xl font-serif font-bold text-slate-800 mb-2">The Blueprint</h1>
         <p className="text-xl text-slate-500 italic">Designing a life together, one choice at a time.</p>
       </header>
@@ -42,14 +41,9 @@ export default function Home() {
         {Object.entries(categoryData).map(([id, cat]) => (
           <Link key={id} href={`/rank/${id}`}>
             <div className="blueprint-card group cursor-pointer">
-              <div className="flex items-center gap-4">
-                <span className="text-4xl group-hover:scale-125 transition-transform duration-300">
-                  {cat.icon}
-                </span>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-700">{cat.name}</h3>
-                  <p className="text-sm text-slate-400">Tap to align</p>
-                </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-700">{cat.name}</h3>
+                <p className="text-sm text-slate-400">Tap to align</p>
               </div>
             </div>
           </Link>
