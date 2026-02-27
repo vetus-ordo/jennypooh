@@ -1,11 +1,8 @@
-// lib/data.ts
-export interface ScenarioOption {
-  id: string;
-  text: string;
-}
+export interface ScenarioOption { id: string; text: string }
 
 export interface Scenario {
   name: string;
+  emoji: string;
   situation: string;
   question: string;
   options: ScenarioOption[];
@@ -14,37 +11,34 @@ export interface Scenario {
 export interface Character {
   id: 'baymax' | 'toothless';
   name: string;
-  reactions: {
-    perfect: string;
-    good: string;
-    mismatch: string;
-  };
+  theme: string;
+  reactions: { perfect: string; good: string; mismatch: string; hilarious: string };
 }
 
 export const characters: Record<string, Character> = {
   baymax: {
-    id: 'baymax',
-    name: 'Baymax',
+    id: 'baymax', name: 'Baymax', theme: 'baymax',
     reactions: {
-      perfect: 'I am satisfied with this compatibility',
-      good: 'Treatment is working well',
-      mismatch: 'I detect a need for discussion'
+      perfect: '✅ I am fully satisfied with this compatibility',
+      good: '💙 Treatment is working well — minor adjustments recommended',
+      mismatch: '⚠️ I detect a need for discussion. Initiating care protocol.',
+      hilarious: '🤖 ...I am choosing not to process this data.'
     }
   },
   toothless: {
-    id: 'toothless',
-    name: 'Toothless',
+    id: 'toothless', name: 'Toothless', theme: 'toothless',
     reactions: {
-      perfect: '😊 *happy wiggle*',
-      good: '🤔 *curious head tilt*',
-      mismatch: '😐 *skeptical squint*'
+      perfect: '🐉 *ecstatic tail wag* — PERFECT MATCH!',
+      good: '🤔 *curious head tilt* — pretty close!',
+      mismatch: '😐 *skeptical squint* — we need to talk...',
+      hilarious: '😂 *falls off rock laughing*'
     }
   }
-};
+}
 
 export const scenarioData: Record<string, Scenario> = {
   'money-management': {
-    name: 'Money Management',
+    name: 'Money Management', emoji: '💰',
     situation: 'You just got married and need to set up your finances.',
     question: 'How should we handle our bank accounts?',
     options: [
@@ -56,7 +50,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'spending-limits': {
-    name: 'Big Purchase',
+    name: 'Big Purchase', emoji: '🛍️',
     situation: 'You are at Target and see the perfect throw pillows for $80.',
     question: 'What do you do?',
     options: [
@@ -68,7 +62,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'eating-out': {
-    name: 'Eating Out',
+    name: 'Eating Out', emoji: '🍜',
     situation: 'It is Wednesday evening. Neither of you feel like cooking.',
     question: 'What happens?',
     options: [
@@ -80,7 +74,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'holidays': {
-    name: 'Holiday Plans',
+    name: 'Holiday Plans', emoji: '🦃',
     situation: 'It is November. Both families are asking about Thanksgiving plans.',
     question: 'Where are we spending the holidays?',
     options: [
@@ -92,7 +86,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'john-moonyoung': {
-    name: 'John & Moonyoung',
+    name: 'John & Moonyoung', emoji: '👨‍👩‍👦',
     situation: 'Your brother John texts asking if you want to grab dinner this weekend.',
     question: 'How often do we see them?',
     options: [
@@ -104,7 +98,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'our-friends': {
-    name: 'Friend Groups',
+    name: 'Friend Groups', emoji: '🥂',
     situation: 'You have your college friends. She has her work friends. Nobody knows each other yet.',
     question: 'What is the plan?',
     options: [
@@ -116,7 +110,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'house-type': {
-    name: 'Home Search',
+    name: 'Home Search', emoji: '🏠',
     situation: 'You are apartment hunting together for the first time.',
     question: 'What are we looking for?',
     options: [
@@ -128,7 +122,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'cleanliness': {
-    name: 'Cleaning Standards',
+    name: 'Cleaning Standards', emoji: '🧹',
     situation: 'Friends are coming over in 3 hours. The apartment is kind of messy.',
     question: 'What is your reaction?',
     options: [
@@ -140,7 +134,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'morning-routine': {
-    name: 'Morning Chaos',
+    name: 'Morning Chaos', emoji: '☀️',
     situation: 'It is 6:30am. You need to leave by 7:45am. She tends to oversleep.',
     question: 'How do mornings work?',
     options: [
@@ -152,7 +146,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'night-routine': {
-    name: 'Bedtime',
+    name: 'Bedtime', emoji: '🌙',
     situation: 'It is 11pm. You are exhausted and in bed. She is still watching TV in the living room.',
     question: 'What do you do?',
     options: [
@@ -164,7 +158,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'decision-making': {
-    name: 'Dinner Decision',
+    name: 'Dinner Decision', emoji: '🤷',
     situation: 'It is 6pm. "What do you want for dinner?" "I do not know, what do you want?"',
     question: 'How do we break the cycle?',
     options: [
@@ -176,7 +170,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'fighting': {
-    name: 'After a Fight',
+    name: 'After a Fight', emoji: '🌧️',
     situation: 'You just had a big argument. It is still tense.',
     question: 'What do you need right now?',
     options: [
@@ -188,7 +182,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'friday-night': {
-    name: 'Friday Night',
+    name: 'Friday Night', emoji: '🎉',
     situation: 'It is Friday at 6pm. You both just got home from a long work week.',
     question: 'What sounds good?',
     options: [
@@ -200,7 +194,7 @@ export const scenarioData: Record<string, Scenario> = {
     ]
   },
   'opposite-sex': {
-    name: 'Friend Hangout',
+    name: 'Friend Hangout', emoji: '☕',
     situation: 'An old friend of the opposite sex is in town and wants to grab coffee one-on-one.',
     question: 'How do you feel about this?',
     options: [
@@ -211,4 +205,11 @@ export const scenarioData: Record<string, Scenario> = {
       { id: 'uncomfortable', text: 'I would prefer you did not' }
     ]
   }
-};
+}
+
+export const categoryGroups: Record<string, { label: string; emoji: string; ids: string[] }> = {
+  money:     { label: 'Money',               emoji: '💰', ids: ['money-management', 'spending-limits', 'eating-out'] },
+  lifestyle: { label: 'Lifestyle',           emoji: '🏡', ids: ['house-type', 'cleanliness', 'morning-routine', 'night-routine', 'friday-night'] },
+  social:    { label: 'Social',              emoji: '🥂', ids: ['holidays', 'john-moonyoung', 'our-friends', 'opposite-sex'] },
+  conflict:  { label: 'Conflict & Decisions',emoji: '🤝', ids: ['decision-making', 'fighting'] }
+}
