@@ -2,84 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────
+   ROOT (fallback / pre-selection)
+───────────────────────────────────────── */
 :root {
-  --bg-warm: #F9F8F6;
-  --accent-sage: #7B9E89;
-  --accent-terra: #D98C71;
-  --text-main: #2F353B;
-  --card-shadow: 0 10px 30px -5px rgba(123, 158, 137, 0.2);
+  --bg-warm:     #F0F6FF;
+  --bg-card:     #FFFFFF;
+  --accent-sage: #3A85C8;
+  --accent-terra:#FF6B6B;
+  --accent-glow: rgba(58,133,200,0.12);
+  --text-main:   #0D1B2A;
+  --text-muted:  rgba(13,27,42,0.45);
+  --card-shadow: 0 8px 32px -4px rgba(58,133,200,0.14);
+  --border:      rgba(58,133,200,0.14);
 }
 
-/* Baymax theme */
+/* ─────────────────────────────────────────
+   BAYMAX — clinical warm whites,
+   sky blue diagnostics, chest-sensor red
+───────────────────────────────────────── */
 body[data-theme='baymax'] {
-  --bg-warm: #EEF4FB;
-  --accent-sage: #5B9BD5;
-  --accent-terra: #A8C8E8;
-  --text-main: #1A2D3E;
-  --card-shadow: 0 10px 30px -5px rgba(91, 155, 213, 0.2);
+  --bg-warm:     #F0F6FF;
+  --bg-card:     #FFFFFF;
+  --accent-sage: #3A85C8;
+  --accent-terra:#FF6B6B;
+  --accent-glow: rgba(58,133,200,0.1);
+  --text-main:   #0D1B2A;
+  --text-muted:  rgba(13,27,42,0.45);
+  --card-shadow: 0 8px 32px -4px rgba(58,133,200,0.14);
+  --border:      rgba(58,133,200,0.14);
 }
 
-/* Toothless theme */
+/* ─────────────────────────────────────────
+   TOOTHLESS — Night Fury deep space,
+   bioluminescent teal, plasma blue
+───────────────────────────────────────── */
 body[data-theme='toothless'] {
-  --bg-warm: #1A1A2E;
-  --accent-sage: #7B5EA7;
-  --accent-terra: #E94560;
-  --text-main: #E0D7F5;
-  --card-shadow: 0 10px 30px -5px rgba(123, 94, 167, 0.4);
+  --bg-warm:     #080C14;
+  --bg-card:     rgba(255,255,255,0.04);
+  --accent-sage: #00E5C8;
+  --accent-terra:#4FC3F7;
+  --accent-glow: rgba(0,229,200,0.1);
+  --text-main:   #E8F4FD;
+  --text-muted:  rgba(232,244,253,0.45);
+  --card-shadow: 0 8px 32px -4px rgba(0,229,200,0.18);
+  --border:      rgba(0,229,200,0.15);
 }
 
+/* ─────────────────────────────────────────
+   BASE BODY
+───────────────────────────────────────── */
 body {
   background-color: var(--bg-warm);
   color: var(--text-main);
-  font-family: var(--font-nunito), 'Inter', system-ui, sans-serif;
+  font-family: var(--font-nunito), var(--font-body), system-ui, sans-serif;
   transition: background-color 0.5s ease, color 0.5s ease;
+  min-height: 100vh;
 }
 
-.blueprint-card {
-  @apply border rounded-3xl p-6 transition-all duration-300;
-  background-color: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.15);
-  box-shadow: var(--card-shadow);
+body[data-theme='toothless'] h1,
+body[data-theme='toothless'] h2 {
+  font-family: var(--font-cinzel), serif;
+  letter-spacing: 0.04em;
 }
 
-body:not([data-theme='toothless']) .blueprint-card {
-  background-color: white;
-  border-color: rgba(0,0,0,0.08);
-}
-
-.blueprint-card:hover {
-  @apply -translate-y-2;
-  box-shadow: 0 20px 40px -10px rgba(123, 158, 137, 0.3);
-}
-
-.btn-blueprint {
-  @apply px-8 py-3 rounded-full font-bold text-white transition-all duration-200;
-  background-color: var(--accent-sage);
-}
-
-.btn-blueprint:hover {
-  @apply scale-105;
-  filter: brightness(0.9);
-}
-
-/* Stars background for Toothless */
+/* ─────────────────────────────────────────
+   TOOTHLESS AURORA BACKGROUND
+───────────────────────────────────────── */
 body[data-theme='toothless']::before {
   content: '';
   position: fixed;
   inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(0,229,200,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(79,195,247,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(123,94,167,0.04) 0%, transparent 50%);
+  animation: aurora 8s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body[data-theme='toothless']::after {
+  content: '';
+  position: fixed;
+  inset: 0;
   background-image:
-    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
-    radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 80% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 40% 35%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1px 1px at 65% 65%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(2px 2px at 85% 15%, rgba(255,255,255,0.6) 0%, transparent 100%);
+    radial-gradient(1px 1px at 8%  12%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 18% 38%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 28% 8%,  rgba(255,255,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 42% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 22%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 63% 78%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 72% 14%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 67%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 93% 10%, rgba(255,255,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 72%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 48% 88%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 5%  55%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 42%, rgba(0,229,200,0.6)   0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 30%, rgba(79,195,247,0.5)  0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 5%,  rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 50% 50%, rgba(0,229,200,0.4)   0%, transparent 100%);
+  animation: twinkle 4s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: 0;
 }
@@ -89,8 +115,106 @@ body[data-theme='toothless'] > * {
   z-index: 1;
 }
 
+/* Baymax subtle scanline overlay */
+body[data-theme='baymax']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(58,133,200,0.03) 1px, transparent 1px);
+  background-size: 100% 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+body[data-theme='baymax'] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────
+   CARDS
+───────────────────────────────────────── */
+.blueprint-card {
+  @apply border rounded-3xl p-6 transition-all duration-300;
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--card-shadow);
+}
+
+.blueprint-card:hover {
+  @apply -translate-y-2;
+}
+
+body[data-theme='baymax'] .blueprint-card:hover {
+  box-shadow: 0 0 0 2px rgba(58,133,200,0.25), 0 20px 40px -10px rgba(58,133,200,0.2);
+}
+
+body[data-theme='toothless'] .blueprint-card:hover {
+  box-shadow: 0 0 0 1px rgba(0,229,200,0.4), 0 20px 40px -10px rgba(0,229,200,0.25);
+}
+
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+.btn-blueprint {
+  @apply px-8 py-3 rounded-full font-bold text-white transition-all duration-200;
+  background-color: var(--accent-sage);
+  box-shadow: 0 4px 14px -2px var(--accent-glow);
+}
+
+.btn-blueprint:hover {
+  @apply scale-105;
+  filter: brightness(1.1);
+}
+
+body[data-theme='toothless'] .btn-blueprint {
+  color: #080C14;
+  font-weight: 800;
+}
+
+/* ─────────────────────────────────────────
+   SCORE TIER BANNERS
+───────────────────────────────────────── */
+.tier-soulmates {
+  background: linear-gradient(135deg, rgba(0,229,200,0.15), rgba(79,195,247,0.1));
+  border: 1px solid rgba(0,229,200,0.3);
+}
+body[data-theme='baymax'] .tier-soulmates {
+  background: linear-gradient(135deg, rgba(58,133,200,0.12), rgba(100,180,255,0.08));
+  border: 1px solid rgba(58,133,200,0.25);
+}
+.tier-aligned {
+  background: linear-gradient(135deg, rgba(58,200,130,0.12), rgba(100,220,160,0.08));
+  border: 1px solid rgba(58,200,130,0.2);
+}
+.tier-progress {
+  background: linear-gradient(135deg, rgba(255,180,50,0.12), rgba(255,200,100,0.08));
+  border: 1px solid rgba(255,180,50,0.2);
+}
+.tier-opposites {
+  background: linear-gradient(135deg, rgba(255,107,107,0.12), rgba(255,140,140,0.08));
+  border: 1px solid rgba(255,107,107,0.2);
+}
+
+/* ─────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────── */
+@keyframes aurora {
+  0%   { opacity: 0.6; transform: scale(1)    translateY(0); }
+  100% { opacity: 1;   transform: scale(1.06) translateY(-12px); }
+}
+
+@keyframes twinkle {
+  0%   { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+
 @keyframes draw-check {
-  0% { stroke-dashoffset: 100; }
+  0%   { stroke-dashoffset: 100; }
   100% { stroke-dashoffset: 0; }
 }
 
