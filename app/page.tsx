@@ -6,10 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { characters } from '@/lib/data'
 
-// Firebase imports ready to be wired up
-// import { doc, setDoc } from 'firebase/firestore'
-// import { db } from '@/firebase'
-
 export default function Home() {
   const router = useRouter()
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
@@ -22,7 +18,6 @@ export default function Home() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    // Check if a session is already active
     const savedRoom = localStorage.getItem('roomId')
     if (savedRoom) { 
       router.push(`/scenarios`) 
@@ -31,7 +26,6 @@ export default function Home() {
     }
   }, [router])
 
-  // Triggers mobile haptic feedback
   const triggerHaptic = () => {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
       window.navigator.vibrate(50);
@@ -43,34 +37,13 @@ export default function Home() {
     setIsCreatingRoom(true)
     triggerHaptic()
 
-    // Generate a simple unique room code
     const newRoomId = Math.random().toString(36).substring(2, 10)
     
     try {
-      // 🚀 FIREBASE INTEGRATION (Uncomment when db is ready)
-      /*
-      await setDoc(doc(db, "rooms", newRoomId), {
-        createdAt: Date.now(),
-        status: 'waiting',
-        andrew: {
-          character: selectedCharacter,
-          completed: false,
-          answers: {}
-        },
-        jenny: {
-          character: selectedCharacter === 'baymax' ? 'toothless' : 'baymax',
-          completed: false,
-          answers: {}
-        }
-      })
-      */
-
-      // Save local context
       localStorage.setItem('myCharacter', selectedCharacter)
       localStorage.setItem('partnerName', partnerName.trim())
       localStorage.setItem('roomId', newRoomId)
       
-      // Artificial delay for the "Hacking/Terminal" effect
       setTimeout(() => {
         setRoomId(newRoomId)
         setStep('invite')
@@ -92,10 +65,10 @@ export default function Home() {
   }
 
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#080B10]">
-      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}>
-        <Image src="/baymax.png" alt="Loading" width={80} height={80} className="object-contain drop-shadow-xl opacity-50" />
-      </motion.div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#080B10]">
+      <div className="w-32 h-32 rounded-full overflow-hidden border border-[#3A85C8]/30 shadow-[0_0_30px_rgba(58,133,200,0.2)] mb-6">
+        <video src="/baymax-coffee.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90" />
+      </div>
     </div>
   )
 
@@ -105,7 +78,6 @@ export default function Home() {
     <main className="min-h-screen flex flex-col relative overflow-hidden transition-colors duration-500">
       <AnimatePresence mode="wait">
 
-        {/* STEP 1: CHARACTER SELECTION */}
         {step === 'character' && (
           <motion.div
             key="char"
@@ -131,6 +103,7 @@ export default function Home() {
               {(['baymax', 'toothless'] as const).map((id, idx) => {
                 const isSelected = selectedCharacter === id
                 const isHovered = hoveredChar === id
+                const activeGif = id === 'baymax' ? '/baymax.gif' : '/toothless-fly.gif'
                 
                 return (
                   <motion.button
@@ -144,7 +117,6 @@ export default function Home() {
                     className={`relative flex-1 flex flex-col items-center justify-center p-12 md:p-16 overflow-hidden glass-card cursor-pointer group ${isSelected ? 'ring-2 ring-offset-2 ring-offset-[#080B10]' : ''}`}
                     style={isSelected ? { borderColor: id === 'toothless' ? '#00E5C8' : '#3A85C8' } : {}}
                   >
-                    {/* Character image */}
                     <motion.div
                       className="relative z-10 mb-6"
                       animate={{
@@ -157,11 +129,12 @@ export default function Home() {
                       }}
                     >
                       <Image
-                        src={`/${id}.png`}
-                        alt={id === 'baymax' ? 'Baymax' : 'Toothless'}
+                        src={activeGif}
+                        alt={characters[id].name}
                         width={200} height={200}
                         className="object-contain drop-shadow-2xl"
                         priority
+                        unoptimized
                       />
                     </motion.div>
 
@@ -219,12 +192,20 @@ export default function Home() {
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-8 w-full max-w-sm mb-8 text-center">
               <div className="flex justify-center items-center gap-6 mb-8">
                  <div className="flex flex-col items-center">
-                    <Image src={`/${selectedCharacter}.png`} alt="You" width={64} height={64} className="mb-2" />
+                    <div className="w-16 h-16 flex items-center justify-center mb-2">
+                      <Image src={selectedCharacter === 'baymax' ? '/baymax-wave.png' : '/toothless.png'} alt="You" width={64} height={64} className="object-contain drop-shadow-lg" />
+                    </div>
                     <span className="text-xs text-[#8B9BB4] font-bold uppercase">Host</span>
                  </div>
                  <div className="text-[#8B9BB4] text-2xl">↔</div>
                  <div className="flex flex-col items-center">
-                    <Image src={`/${partnerCharacter}.png`} alt="Partner" width={64} height={64} className="mb-2 opacity-50" />
+                    <div className="w-16 h-16 flex items-center justify-center mb-2 opacity-70">
+                      {partnerCharacter === 'baymax' ? (
+                        <Image src="/baymax.png" alt="Partner" width={64} height={64} className="object-contain drop-shadow-lg" />
+                      ) : (
+                        <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-full h-full object-contain drop-shadow-lg" />
+                      )}
+                    </div>
                     <span className="text-xs text-[#8B9BB4] font-bold uppercase">Client</span>
                  </div>
               </div>

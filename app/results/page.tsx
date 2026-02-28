@@ -62,15 +62,23 @@ function ScoreTierBanner({ score }: { score: number }) {
   )
 }
 
-function CharAvatar({ character, size = 48 }: { character: string; size?: number }) {
+// Updated to utilize the new GIFs for the final reveal!
+function CharAvatar({ character, size = 48, animated = false }: { character: string; size?: number; animated?: boolean }) {
   if (!character) return null
+  
+  let source = `/${character}.png`
+  if (animated) {
+    source = character === 'baymax' ? '/baymax-heart.gif' : '/toothless-lick.gif'
+  }
+
   return (
     <Image
-      src={`/${character}.png`}
+      src={source}
       alt={character}
       width={size}
       height={size}
-      className="object-contain drop-shadow-lg inline-block"
+      className={`object-contain inline-block ${animated ? 'drop-shadow-2xl' : 'drop-shadow-lg'}`}
+      unoptimized={animated}
     />
   )
 }
@@ -160,9 +168,9 @@ export default function Results() {
       {/* Header */}
       <motion.header className="text-center mb-12" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-center gap-4 mb-4">
-          <CharAvatar character={myCharacter} size={64} />
+          <CharAvatar character={myCharacter} size={84} animated={true} />
           <span className="text-4xl">💌</span>
-          <CharAvatar character={partnerCharacter} size={64} />
+          <CharAvatar character={partnerCharacter} size={84} animated={true} />
         </div>
         <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Compatibility Report</h1>
         <p className="italic" style={{ color: 'var(--text-muted)' }}>You & {partnerName}</p>
@@ -300,7 +308,7 @@ export default function Results() {
         <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
           <div className="text-6xl mb-5">🤔</div>
           <p className="text-xl font-semibold mb-2" style={{ color: 'var(--text-main)' }}>Nothing here yet</p>
-          <p>Go answer some scenarios first!</p>
+          <p>Once you connect via Firebase, responses will appear here!</p>
           <Link href="/scenarios" className="btn-blueprint inline-block mt-6 text-base px-8 py-3">
             ← Back to Scenarios
           </Link>
@@ -338,7 +346,7 @@ export default function Results() {
 
       <div className="mt-10 text-center">
         <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-60" style={{ color: 'var(--text-muted)' }}>
-          ← Back to Scenarios
+          ← Back to Hub
         </Link>
       </div>
     </main>

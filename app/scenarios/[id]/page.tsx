@@ -14,7 +14,13 @@ export default function ScenarioPage() {
   const router = useRouter()
   const scenario = scenarioData[id as string]
   const [myCharacter, setMyCharacter] = useState('')
-  const [selected, setSelected] = useState<string | null>(null)
+  
+  // New 3-Phase State
+  const [step, setStep] = useState<'mine' | 'guess' | 'stakes'>('mine')
+  const [myAnswer, setMyAnswer] = useState<string | null>(null)
+  const [guessedAnswer, setGuessedAnswer] = useState<string | null>(null)
+  const [importance, setImportance] = useState(3)
+  
   const [saved, setSaved] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
@@ -22,13 +28,31 @@ export default function ScenarioPage() {
     const char = localStorage.getItem('myCharacter') || ''
     setMyCharacter(char)
     document.body.setAttribute('data-theme', char)
+    
+    // Load existing data if replaying
     const s = localStorage.getItem(`scenario_${id}`)
-    if (s) setSelected(JSON.parse(s).myAnswer || null)
+    if (s) {
+      const parsed = JSON.parse(s)
+      if (parsed.myAnswer) setMyAnswer(parsed.myAnswer)
+      if (parsed.guessedPartnerAnswer) setGuessedAnswer(parsed.guessedPartnerAnswer)
+      if (parsed.importance) setImportance(parsed.importance)
+    }
   }, [id])
 
+  const triggerHaptic = () => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50);
+    }
+  }
+
   const handleSave = () => {
-    if (selected && !saved) {
-      localStorage.setItem(`scenario_${id}`, JSON.stringify({ myAnswer: selected }))
+    if (myAnswer && !saved) {
+      triggerHaptic()
+      localStorage.setItem(`scenario_${id}`, JSON.stringify({ 
+        myAnswer, 
+        guessedPartnerAnswer: guessedAnswer, 
+        importance 
+      }))
       setSaved(true)
       const msg = myCharacter === 'baymax'
         ? '💙 Scanning complete. Response recorded.'
@@ -43,6 +67,8 @@ export default function ScenarioPage() {
       Scenario not found.
     </div>
   )
+
+  const activeGif = myCharacter === 'toothless' ? '/toothless-fly.gif' : '/baymax-dance.gif'
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-16">
@@ -65,103 +91,148 @@ export default function ScenarioPage() {
       </AnimatePresence>
 
       <motion.header className="mb-10 text-center" initial={{ opacity: 0, y: -15 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="text-5xl mb-3">{scenario.emoji}</div>
         {myCharacter && (
-          <motion.div
-            className="inline-block mb-4"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          >
+          <motion.div className="inline-block mb-4">
             <Image
-              src={`/${myCharacter}.png`}
+              src={activeGif}
               alt={myCharacter}
-              width={80} height={80}
+              width={90} height={90}
               className="object-contain drop-shadow-xl"
               priority
+              unoptimized
             />
           </motion.div>
         )}
-        <h1 className="text-3xl md:text-4xl font-bold mb-5" style={{ color: 'var(--text-main)' }}>
-          {scenario.name}
+        <h1 className="text-3xl md:text-4xl font-bold mb-5 flex items-center justify-center gap-3" style={{ color: 'var(--text-main)' }}>
+          <span>{scenario.emoji}</span> {scenario.name}
         </h1>
         <div
-          className="p-6 rounded-2xl text-left"
+          className="p-6 rounded-2xl text-left relative overflow-hidden"
           style={{ background: 'var(--accent-glow)', borderLeft: '4px solid var(--accent-sage)' }}
         >
-          <p className="italic mb-3 text-base" style={{ color: 'var(--text-main)', opacity: 0.8 }}>
+          {/* Progress Indicator for the 3 steps */}
+          <div className="absolute top-0 left-0 w-full h-1" style={{ background: 'rgba(128,128,128,0.1)' }}>
+            <motion.div 
+              className="h-full" style={{ background: 'var(--accent-sage)' }}
+              animate={{ width: step === 'mine' ? '33%' : step === 'guess' ? '66%' : '100%' }}
+            />
+          </div>
+
+          <p className="italic mb-3 text-base mt-2" style={{ color: 'var(--text-main)', opacity: 0.8 }}>
             {scenario.situation}
           </p>
-          <p className="text-lg font-bold" style={{ color: 'var(--accent-sage)' }}>{scenario.question}</p>
+          <p className="text-lg font-bold" style={{ color: 'var(--accent-sage)' }}>
+            {step === 'mine' ? scenario.question : step === 'guess' ? "What do you think she will choose?" : "How important is this to you?"}
+          </p>
         </div>
       </motion.header>
 
-      <div className="space-y-3 mb-12">
-        {scenario.options.map((option, i) => {
-          const isSelected = selected === option.id
-          return (
-            <motion.button
-              key={option.id}
-              onClick={() => setSelected(option.id)}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.07 }}
-              whileHover={{ scale: 1.015, x: 4 }}
-              whileTap={{ scale: 0.985 }}
-              className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4"
-              style={
-                isSelected
-                  ? {
-                      borderColor: 'var(--accent-sage)',
-                      background: 'var(--accent-glow)',
-                      boxShadow: `0 0 0 3px var(--accent-glow), var(--card-shadow)`,
+      <AnimatePresence mode="wait">
+        {step === 'mine' && (
+          <motion.div key="mine" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 mb-12">
+            {scenario.options.map((option, i) => {
+              const isSelected = myAnswer === option.id
+              return (
+                <motion.button
+                  key={option.id}
+                  onClick={() => { setMyAnswer(option.id); triggerHaptic(); setTimeout(() => setStep('guess'), 400); }}
+                  whileHover={{ scale: 1.015, x: 4 }} whileTap={{ scale: 0.985 }}
+                  className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4"
+                  style={isSelected
+                      ? { borderColor: 'var(--accent-sage)', background: 'var(--accent-glow)', boxShadow: `0 0 0 3px var(--accent-glow), var(--card-shadow)` }
+                      : { borderColor: 'var(--border)', background: 'var(--bg-card)' }
+                  }
+                >
+                  <span
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all duration-200"
+                    style={isSelected
+                        ? { background: 'var(--accent-sage)', color: myCharacter === 'toothless' ? '#080C14' : 'white' }
+                        : { background: 'rgba(128,128,128,0.12)', color: 'var(--text-muted)' }
                     }
-                  : {
-                      borderColor: 'var(--border)',
-                      background: 'var(--bg-card)',
+                  >
+                    {OPTION_LETTERS[i]}
+                  </span>
+                  <p className="font-medium" style={{ color: 'var(--text-main)' }}>{option.text}</p>
+                </motion.button>
+              )
+            })}
+          </motion.div>
+        )}
+
+        {step === 'guess' && (
+          <motion.div key="guess" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 mb-12">
+            {scenario.options.map((option, i) => {
+              const isSelected = guessedAnswer === option.id
+              return (
+                <motion.button
+                  key={option.id}
+                  onClick={() => { setGuessedAnswer(option.id); triggerHaptic(); setTimeout(() => setStep('stakes'), 400); }}
+                  whileHover={{ scale: 1.015, x: 4 }} whileTap={{ scale: 0.985 }}
+                  className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4"
+                  style={isSelected
+                      ? { borderColor: '#B68AFF', background: 'rgba(182, 138, 255, 0.15)', boxShadow: `0 0 0 3px rgba(182, 138, 255, 0.15), var(--card-shadow)` }
+                      : { borderColor: 'var(--border)', background: 'var(--bg-card)' }
+                  }
+                >
+                  <span
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all duration-200"
+                    style={isSelected
+                        ? { background: '#B68AFF', color: '#080C14' }
+                        : { background: 'rgba(128,128,128,0.12)', color: 'var(--text-muted)' }
                     }
-              }
-            >
-              <span
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all duration-200"
-                style={
-                  isSelected
-                    ? {
-                        background: 'var(--accent-sage)',
-                        color: myCharacter === 'toothless' ? '#080C14' : 'white',
-                      }
-                    : {
-                        background: 'rgba(128,128,128,0.12)',
-                        color: 'var(--text-muted)',
-                      }
-                }
-              >
-                {OPTION_LETTERS[i]}
-              </span>
-              <p className="font-medium" style={{ color: 'var(--text-main)' }}>{option.text}</p>
-            </motion.button>
-          )
-        })}
-      </div>
+                  >
+                    {OPTION_LETTERS[i]}
+                  </span>
+                  <p className="font-medium" style={{ color: 'var(--text-main)' }}>{option.text}</p>
+                </motion.button>
+              )
+            })}
+          </motion.div>
+        )}
+
+        {step === 'stakes' && (
+          <motion.div key="stakes" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-12 text-center py-6">
+            <input 
+              type="range" min="1" max="5" 
+              value={importance} 
+              onChange={(e) => { setImportance(Number(e.target.value)); triggerHaptic(); }}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer mb-6"
+              style={{ background: 'var(--border)' }}
+            />
+            <div className="flex justify-between text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+              <span style={importance <= 2 ? { color: 'var(--text-main)' } : {}}>Meh 🤷‍♂️</span>
+              <span style={importance === 3 ? { color: 'var(--text-main)' } : {}}>Important 🤔</span>
+              <span style={importance >= 4 ? { color: '#FF6B6B' } : {}}>Dealbreaker 🛑</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex justify-between items-center">
-        <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
-          ← Back
-        </Link>
+        {step !== 'mine' ? (
+          <button onClick={() => setStep(step === 'stakes' ? 'guess' : 'mine')} className="font-bold transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+            ← Back
+          </button>
+        ) : (
+          <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+            ← Exit
+          </Link>
+        )}
+        
         <AnimatePresence mode="wait">
           {saved ? (
             <motion.div key="saved" initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-3xl">✅</motion.div>
-          ) : (
+          ) : step === 'stakes' ? (
             <motion.button
               key="save"
               onClick={handleSave}
-              disabled={!selected}
-              whileHover={selected ? { scale: 1.05 } : {}}
-              whileTap={selected ? { scale: 0.95 } : {}}
-              className={`btn-blueprint text-base ${!selected ? 'opacity-30 cursor-not-allowed' : ''}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="btn-blueprint text-base"
             >
-              Save Answer
+              Lock Protocol 🔒
             </motion.button>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
     </main>
