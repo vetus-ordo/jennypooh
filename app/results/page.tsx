@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scenarioData, characters, categoryGroups } from '@/lib/data'
 
@@ -21,15 +22,23 @@ function useCountUp(target: number, duration = 1400) {
 }
 
 function Confetti({ active }: { active: boolean }) {
-  const colors = ['#00E5C8','#4FC3F7','#3A85C8','#FF6B6B','#FFD700','#7B5EA7']
+  const colors = ['#00E5C8', '#4FC3F7', '#3A85C8', '#FF6B6B', '#FFD700', '#7B5EA7']
   if (!active) return null
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
       {Array.from({ length: 48 }).map((_, i) => (
-        <motion.div key={i} className="absolute rounded-sm"
-          style={{ width: Math.random()*10+6, height: Math.random()*10+6, background: colors[i%colors.length], left: `${Math.random()*100}%`, top: -20 }}
-          animate={{ y: ['0vh','115vh'], x: [0,(Math.random()-0.5)*260], rotate: [0,Math.random()*720], opacity: [1,0.8,0] }}
-          transition={{ duration: Math.random()*2+1.5, delay: Math.random()*0.8, ease: 'easeIn' }}
+        <motion.div
+          key={i}
+          className="absolute rounded-sm"
+          style={{
+            width: Math.random() * 10 + 6,
+            height: Math.random() * 10 + 6,
+            background: colors[i % colors.length],
+            left: `${Math.random() * 100}%`,
+            top: -20,
+          }}
+          animate={{ y: ['0vh', '115vh'], x: [0, (Math.random() - 0.5) * 260], rotate: [0, Math.random() * 720], opacity: [1, 0.8, 0] }}
+          transition={{ duration: Math.random() * 2 + 1.5, delay: Math.random() * 0.8, ease: 'easeIn' }}
         />
       ))}
     </div>
@@ -38,20 +47,31 @@ function Confetti({ active }: { active: boolean }) {
 
 function ScoreTierBanner({ score }: { score: number }) {
   const [label, emoji, tierClass] =
-    score >= 90 ? ['Soulmates',          '💍', 'tier-soulmates']
-    : score >= 70 ? ['Pretty Aligned',   '💚', 'tier-aligned']
+    score >= 90 ? ['Soulmates', '💍', 'tier-soulmates']
+    : score >= 70 ? ['Pretty Aligned', '💚', 'tier-aligned']
     : score >= 50 ? ['Work in Progress', '🛠️', 'tier-progress']
-    :               ['Opposites Attract', '⚡', 'tier-opposites']
+    : ['Opposites Attract', '⚡', 'tier-opposites']
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.3 }}
+      initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
       className={`rounded-2xl px-6 py-4 text-center mt-4 ${tierClass}`}
     >
       <span className="text-3xl mr-2">{emoji}</span>
       <span className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>{label}</span>
     </motion.div>
+  )
+}
+
+function CharAvatar({ character, size = 48 }: { character: string; size?: number }) {
+  if (!character) return null
+  return (
+    <Image
+      src={`/${character}.png`}
+      alt={character}
+      width={size}
+      height={size}
+      className="object-contain drop-shadow-lg inline-block"
+    />
   )
 }
 
@@ -86,10 +106,10 @@ export default function Results() {
       const isMatch    = saved.myAnswer === saved.partnerAnswer
       const char       = characters[myChar]
       const bothLast   = myIdx === scenario.options.length - 1 && partnerIdx === scenario.options.length - 1
-      const reaction   = bothLast                            ? char.reactions.hilarious
-        : isMatch                                            ? char.reactions.perfect
-        : Math.abs(myIdx - partnerIdx) <= 1                 ? char.reactions.good
-        :                                                      char.reactions.mismatch
+      const reaction   = bothLast                           ? char.reactions.hilarious
+        : isMatch                                           ? char.reactions.perfect
+        : Math.abs(myIdx - partnerIdx) <= 1                ? char.reactions.good
+        :                                                     char.reactions.mismatch
       return {
         key, name: scenario.name, emoji: scenario.emoji,
         myAnswer: scenario.options[myIdx]?.text,
@@ -120,10 +140,6 @@ export default function Results() {
     }
   }, [scorePercent, totalAnswered, scoreReady])
 
-  const myEmoji      = myCharacter === 'baymax' ? '🤖' : '🐉'
-  const partnerEmoji = partnerCharacter === 'baymax' ? '🤖' : '🐉'
-
-  // Pull ternary out of JSX to avoid template literal parse issues
   const shareCardBg = myCharacter === 'toothless'
     ? 'linear-gradient(135deg, #080C14 0%, #0D1B2E 100%)'
     : 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)'
@@ -143,7 +159,11 @@ export default function Results() {
 
       {/* Header */}
       <motion.header className="text-center mb-12" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="text-6xl mb-4">{myEmoji} 💌 {partnerEmoji}</div>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <CharAvatar character={myCharacter} size={64} />
+          <span className="text-4xl">💌</span>
+          <CharAvatar character={partnerCharacter} size={64} />
+        </div>
         <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Compatibility Report</h1>
         <p className="italic" style={{ color: 'var(--text-muted)' }}>You & {partnerName}</p>
       </motion.header>
@@ -152,17 +172,13 @@ export default function Results() {
       {totalAnswered > 0 && (
         <motion.div
           className="blueprint-card text-center mb-10"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15 }}
+          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}
         >
           <AnimatePresence mode="wait">
             {countdown !== null ? (
               <motion.div
                 key={`cd-${countdown}`}
-                initial={{ scale: 0.4, opacity: 0 }}
-                animate={{ scale: 1.1, opacity: 1 }}
-                exit={{ scale: 1.6, opacity: 0 }}
+                initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1.1, opacity: 1 }} exit={{ scale: 1.6, opacity: 0 }}
                 transition={{ duration: 0.45 }}
                 className="text-8xl font-bold py-6"
                 style={{ color: 'var(--accent-sage)' }}
@@ -184,13 +200,11 @@ export default function Results() {
         </motion.div>
       )}
 
-      {/* Category breakdown — mini bar charts */}
+      {/* Category breakdown */}
       {totalAnswered > 0 && (
         <motion.div
           className="blueprint-card mb-10"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
+          initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
         >
           <h2 className="font-bold text-xs uppercase tracking-widest mb-5" style={{ color: 'var(--text-muted)' }}>
             By Category
@@ -225,9 +239,7 @@ export default function Results() {
           <motion.div
             key={i}
             className="blueprint-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.04 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.04 }}
           >
             <h2
               className="text-lg font-bold pb-3 mb-4 flex items-center gap-2"
@@ -237,19 +249,20 @@ export default function Results() {
             </h2>
             <div className="flex justify-between mb-4 gap-4">
               <div className="flex-1">
-                <p className="text-xs uppercase font-bold mb-1" style={{ color: 'var(--text-muted)' }}>
-                  You ({myEmoji})
-                </p>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <CharAvatar character={myCharacter} size={18} />
+                  <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>You</p>
+                </div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--accent-sage)' }}>{res.myAnswer}</p>
               </div>
               <div className="flex-1">
-                <p className="text-xs uppercase font-bold mb-1" style={{ color: 'var(--text-muted)' }}>
-                  {partnerName} ({partnerEmoji})
-                </p>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <CharAvatar character={partnerCharacter} size={18} />
+                  <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>{partnerName}</p>
+                </div>
                 {revealed[i] ? (
                   <motion.p
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                     className="font-semibold text-sm"
                     style={{ color: 'var(--accent-sage)' }}
                   >
@@ -269,8 +282,7 @@ export default function Results() {
             <AnimatePresence>
               {revealed[i] && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                   className={`p-3 rounded-xl text-sm font-semibold text-center ${
                     res.isMatch ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                   }`}
@@ -299,20 +311,18 @@ export default function Results() {
       {totalAnswered > 0 && (
         <motion.div
           className="mt-14 rounded-3xl overflow-hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          style={{
-            background: shareCardBg,
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--card-shadow)',
-          }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
+          style={{ background: shareCardBg, border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}
         >
           <div className="p-8 text-center">
-            <p className="text-xs uppercase font-bold tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs uppercase font-bold tracking-widest mb-5" style={{ color: 'var(--text-muted)' }}>
               Share Your Score
             </p>
-            <div className="text-6xl mb-2">{myEmoji} 💌 {partnerEmoji}</div>
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <CharAvatar character={myCharacter} size={56} />
+              <span className="text-3xl">💌</span>
+              <CharAvatar character={partnerCharacter} size={56} />
+            </div>
             <div className="text-6xl font-bold mb-2" style={{ color: 'var(--accent-sage)' }}>
               {scorePercent}%
             </div>
@@ -327,11 +337,7 @@ export default function Results() {
       )}
 
       <div className="mt-10 text-center">
-        <Link
-          href="/scenarios"
-          className="font-bold transition-opacity hover:opacity-60"
-          style={{ color: 'var(--text-muted)' }}
-        >
+        <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-60" style={{ color: 'var(--text-muted)' }}>
           ← Back to Scenarios
         </Link>
       </div>
