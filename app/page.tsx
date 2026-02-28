@@ -16,6 +16,10 @@ export default function Home() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [step, setStep] = useState<'character' | 'name' | 'invite'>('character')
+  
+  // Restored: UI States
+  const [copied, setCopied] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
     const savedRoom = localStorage.getItem('roomId')
@@ -35,6 +39,7 @@ export default function Home() {
   const handleCreateRoom = async () => {
     if (!selectedCharacter) return
     setIsCreatingRoom(true)
+    setErrorMsg(null) // Clear old errors
     triggerHaptic()
 
     const newRoomId = Math.random().toString(36).substring(2, 10)
@@ -59,16 +64,20 @@ export default function Home() {
         setIsCreatingRoom(false)
       }, 1200)
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create room:", error)
+      setErrorMsg("Database Connection Failed. Ensure .env.local is configured properly.")
       setIsCreatingRoom(false)
     }
   }
 
+  // Restored: Visual Feedback for the user
   const copyInviteLink = () => {
     triggerHaptic()
     const url = `${window.location.origin}/join/${roomId}`
     navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   if (isLoading) return (
@@ -180,7 +189,6 @@ export default function Home() {
               <h2 className="text-3xl font-bold mb-3 tracking-tight" style={{ color: 'var(--text-main)' }}>Target Designation</h2>
               <p className="mb-8 text-sm" style={{ color: 'var(--text-muted)' }}>Establish secure routing protocol.</p>
               
-              {/* RESTORED AVATAR CONNECTION UI */}
               <div className="flex justify-center items-center gap-6 mb-10">
                  <div className="flex flex-col items-center">
                     <div className="w-16 h-16 flex items-center justify-center mb-2">
@@ -219,6 +227,13 @@ export default function Home() {
                 />
               </div>
 
+              {/* Error Output */}
+              {errorMsg && (
+                <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-semibold text-left">
+                  ⚠️ {errorMsg}
+                </div>
+              )}
+
               <div className="flex gap-4">
                 <button
                   onClick={() => setStep('character')}
@@ -247,7 +262,6 @@ export default function Home() {
           >
             <div className="glass-card p-10 w-full max-w-md text-center">
               
-              {/* RESTORED AVATAR FOR THE INVITE SCREEN */}
               <div className="flex justify-center mb-6">
                 <Image 
                   src={selectedCharacter === 'baymax' ? '/baymax-wave.png' : '/toothless.png'} 
@@ -262,16 +276,17 @@ export default function Home() {
                 Secure tunnel routed. Share this encrypted key with {partnerName} to begin synchronization.
               </p>
 
+              {/* The Fix: copied state now triggers visual ✅ feedback */}
               <div 
                 onClick={copyInviteLink}
-                className="rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all mb-8 border"
-                style={{ backgroundColor: 'var(--bg-deep)', borderColor: 'var(--border-light)' }}
+                className="rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all mb-8 border hover:bg-black/5"
+                style={{ backgroundColor: 'var(--bg-deep)', borderColor: copied ? 'var(--accent-primary)' : 'var(--border-light)' }}
               >
                 <code className="font-mono text-sm truncate mr-4" style={{ color: 'var(--accent-primary)' }}>
                   jennypooh.app/join/{roomId}
                 </code>
-                <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
-                  📋
+                <div className="p-2 rounded-lg transition-colors" style={{ backgroundColor: copied ? 'var(--accent-primary)' : 'var(--bg-card)', color: copied ? '#fff' : 'inherit' }}>
+                  {copied ? '✅' : '📋'}
                 </div>
               </div>
 
