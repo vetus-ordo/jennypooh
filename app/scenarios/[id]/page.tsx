@@ -7,6 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { scenarioData } from '@/lib/data'
 
+// 🚀 FIREBASE IMPORTS
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '@/firebase'
+
 const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
 
 export default function ScenarioPage() {
@@ -45,19 +49,42 @@ export default function ScenarioPage() {
     }
   }
 
-  const handleSave = () => {
+  // 🚀 SYNC TO CLOUD
+  const handleSave = async () => {
     if (myAnswer && !saved) {
       triggerHaptic()
-      localStorage.setItem(`scenario_${id}`, JSON.stringify({ 
+      
+      const payload = { 
         myAnswer, 
         guessedPartnerAnswer: guessedAnswer, 
         importance 
-      }))
+      }
+
+      // 1. Save locally for instant UI reaction
+      localStorage.setItem(`scenario_${id}`, JSON.stringify(payload))
       setSaved(true)
+
       const msg = myCharacter === 'baymax'
         ? '💙 Scanning complete. Response recorded.'
         : '🐉 *approving tail wag*'
       setToast(msg)
+
+      // 2. Push to Firestore
+      try {
+        const roomId = localStorage.getItem('roomId');
+        const role = localStorage.getItem('userRole') || 'host';
+        
+        if (roomId && role) {
+          const roomRef = doc(db, "rooms", roomId);
+          await updateDoc(roomRef, {
+            [`${role}.answers.${id}`]: payload
+          });
+        }
+      } catch (e) {
+        console.error("Firebase sync error: ", e);
+      }
+
+      // 3. Route back to dashboard
       setTimeout(() => router.push('/scenarios'), 1200)
     }
   }

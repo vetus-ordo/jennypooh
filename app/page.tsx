@@ -16,8 +16,6 @@ export default function Home() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [step, setStep] = useState<'character' | 'name' | 'invite'>('character')
-  const [hoveredChar, setHoveredChar] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const savedRoom = localStorage.getItem('roomId')
@@ -43,7 +41,6 @@ export default function Home() {
     const partnerCharacter = selectedCharacter === 'baymax' ? 'toothless' : 'baymax'
     
     try {
-      // 🚀 WRITE TO FIREBASE
       await setDoc(doc(db, "rooms", newRoomId), {
         createdAt: Date.now(),
         status: 'waiting',
@@ -54,13 +51,13 @@ export default function Home() {
       localStorage.setItem('myCharacter', selectedCharacter)
       localStorage.setItem('partnerName', partnerName.trim() || 'Jenny')
       localStorage.setItem('roomId', newRoomId)
-      localStorage.setItem('userRole', 'host') // Marks your device as Player 1
+      localStorage.setItem('userRole', 'host') 
       
       setTimeout(() => {
         setRoomId(newRoomId)
         setStep('invite')
         setIsCreatingRoom(false)
-      }, 1500)
+      }, 1200)
 
     } catch (error) {
       console.error("Failed to create room:", error)
@@ -72,13 +69,11 @@ export default function Home() {
     triggerHaptic()
     const url = `${window.location.origin}/join/${roomId}`
     navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   if (isLoading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#080B10]">
-      <div className="w-32 h-32 rounded-full overflow-hidden border border-[#3A85C8]/30 shadow-[0_0_30px_rgba(58,133,200,0.2)] mb-6">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-deep)' }}>
+      <div className="w-32 h-32 rounded-full overflow-hidden border border-[var(--border-light)] shadow-[0_0_30px_rgba(14,165,233,0.2)] mb-6">
         <video src="/baymax-coffee.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90" />
       </div>
     </div>
@@ -93,69 +88,54 @@ export default function Home() {
         {step === 'character' && (
           <motion.div
             key="char"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }}
-            className="flex flex-col min-h-screen relative z-10"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="flex flex-col min-h-screen items-center justify-center p-6 relative z-10 w-full max-w-4xl mx-auto"
           >
-            <div className="text-center pt-14 pb-6 px-6">
-              <motion.h1
-                initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="text-4xl md:text-5xl font-bold mb-3 text-white"
-              >
-                Choose Your Companion
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                className="text-lg italic text-[#8B9BB4]"
-              >
-                Who guides your journey?
-              </motion.p>
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight" style={{ color: 'var(--text-main)' }}>
+                Diagnostic Protocol
+              </h1>
+              <p className="text-lg" style={{ color: 'var(--text-muted)' }}>
+                Select a companion to initialize the assessment.
+              </p>
             </div>
 
-            <div className="flex flex-col md:flex-row flex-1 gap-4 p-6 max-w-6xl mx-auto w-full">
-              {(['baymax', 'toothless'] as const).map((id, idx) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-12">
+              {(['baymax', 'toothless'] as const).map((id) => {
                 const isSelected = selectedCharacter === id
-                const isHovered = hoveredChar === id
                 const activeGif = id === 'baymax' ? '/baymax.gif' : '/toothless-fly.gif'
                 
                 return (
                   <motion.button
                     key={id}
                     onClick={() => { setSelectedCharacter(id); document.body.setAttribute('data-theme', id); triggerHaptic(); }}
-                    onHoverStart={() => setHoveredChar(id)}
-                    onHoverEnd={() => setHoveredChar(null)}
-                    initial={{ opacity: 0, x: idx === 0 ? -40 : 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.15 + idx * 0.1 }}
-                    className={`relative flex-1 flex flex-col items-center justify-center p-12 md:p-16 overflow-hidden glass-card cursor-pointer group ${isSelected ? 'ring-2 ring-offset-2 ring-offset-[#080B10]' : ''}`}
-                    style={isSelected ? { borderColor: id === 'toothless' ? '#00E5C8' : '#3A85C8' } : {}}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`glass-card p-8 text-left relative overflow-hidden flex flex-col group ${isSelected ? 'ring-2 ring-[var(--accent-primary)]' : ''}`}
                   >
-                    <motion.div
-                      className="relative z-10 mb-6"
-                      animate={{
-                        y: isSelected ? [0, -12, 0] : isHovered ? -8 : 0,
-                        scale: isSelected ? 1.1 : isHovered ? 1.05 : 1,
-                      }}
-                      transition={{
-                        y: isSelected ? { repeat: Infinity, duration: 3, ease: 'easeInOut' } : { duration: 0.3 },
-                        scale: { duration: 0.3 },
-                      }}
+                    <motion.div 
+                      className="w-24 h-24 mb-6 relative z-10 mx-auto md:mx-0 flex items-center justify-center"
+                      animate={{ scale: isSelected ? 1.1 : 1 }} 
+                      transition={{ scale: { duration: 0.3 } }}
                     >
                       <Image
                         src={activeGif}
                         alt={characters[id].name}
-                        width={200} height={200}
-                        className="object-contain drop-shadow-2xl"
+                        width={120} height={120}
+                        className="object-contain drop-shadow-xl"
                         priority
                         unoptimized
                       />
                     </motion.div>
 
-                    <div className="relative z-10 text-center">
-                      <h2 className="text-3xl md:text-4xl font-bold mb-2 text-white">
+                    <div className="relative z-10 text-center md:text-left">
+                      <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>
                         {characters[id].name}
                       </h2>
-                      <p className="text-base font-semibold mb-1 text-white/80">
-                        {id === 'baymax' ? 'Your personal healthcare companion' : 'Night Fury. Last of his kind.'}
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                        {id === 'baymax' 
+                          ? 'Your personal healthcare companion. Clinical, precise, and highly attuned to physiological stress markers.' 
+                          : 'Night Fury. Intuitive, fiercely loyal, and highly responsive to environmental dynamics.'}
                       </p>
                     </div>
 
@@ -163,7 +143,8 @@ export default function Home() {
                       {isSelected && (
                         <motion.div
                           initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-                          className={`absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center text-white text-lg z-10 shadow-lg ${id === 'baymax' ? 'bg-[#3A85C8]' : 'bg-[#00E5C8] text-[#080B10]'}`}
+                          className="absolute top-6 right-6 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs z-10"
+                          style={{ backgroundColor: 'var(--accent-primary)' }}
                         >
                           ✓
                         </motion.div>
@@ -177,11 +158,11 @@ export default function Home() {
             <AnimatePresence>
               {selectedCharacter && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="text-center pb-12 pt-6 px-6 relative z-10"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="w-full text-center"
                 >
-                  <button onClick={() => setStep('name')} className="btn-primary text-xl px-14 py-4">
-                    Initialize {characters[selectedCharacter].name} Protocol →
+                  <button onClick={() => setStep('name')} className="btn-primary w-full md:w-auto px-12 py-4">
+                    Proceed to Authorization →
                   </button>
                 </motion.div>
               )}
@@ -189,103 +170,115 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* STEP 2: NAME ENTRY */}
         {step === 'name' && selectedCharacter && (
           <motion.div
             key="name"
-            initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative z-10"
           >
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-              <h2 className="text-4xl font-bold mb-3 text-white">Target Designation</h2>
-              <p className="text-lg italic text-[#8B9BB4]">Who are we routing this connection to?</p>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-8 w-full max-w-sm mb-8 text-center">
-              <div className="flex justify-center items-center gap-6 mb-8">
+            <div className="glass-card p-10 w-full max-w-md text-center">
+              <h2 className="text-3xl font-bold mb-3 tracking-tight" style={{ color: 'var(--text-main)' }}>Target Designation</h2>
+              <p className="mb-8 text-sm" style={{ color: 'var(--text-muted)' }}>Establish secure routing protocol.</p>
+              
+              {/* RESTORED AVATAR CONNECTION UI */}
+              <div className="flex justify-center items-center gap-6 mb-10">
                  <div className="flex flex-col items-center">
                     <div className="w-16 h-16 flex items-center justify-center mb-2">
-                      <Image src={selectedCharacter === 'baymax' ? '/baymax-wave.png' : '/toothless.png'} alt="You" width={64} height={64} className="object-contain drop-shadow-lg" />
+                      {selectedCharacter === 'baymax' ? (
+                        <Image src="/baymax-wave.png" alt="You" width={64} height={64} className="object-contain drop-shadow-md" />
+                      ) : (
+                        <Image src="/toothless.png" alt="You" width={64} height={64} className="object-contain drop-shadow-md" />
+                      )}
                     </div>
-                    <span className="text-xs text-[#8B9BB4] font-bold uppercase">Host</span>
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Host</span>
                  </div>
-                 <div className="text-[#8B9BB4] text-2xl">↔</div>
+                 
+                 <div className="text-2xl" style={{ color: 'var(--text-muted)' }}>↔</div>
+                 
                  <div className="flex flex-col items-center">
                     <div className="w-16 h-16 flex items-center justify-center mb-2 opacity-70">
                       {partnerCharacter === 'baymax' ? (
-                        <Image src="/baymax.png" alt="Partner" width={64} height={64} className="object-contain drop-shadow-lg" />
+                        <Image src="/baymax.png" alt="Partner" width={64} height={64} className="object-contain drop-shadow-md" />
                       ) : (
-                        <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-full h-full object-contain drop-shadow-lg" />
+                        <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-full h-full object-contain drop-shadow-md rounded-full" />
                       )}
                     </div>
-                    <span className="text-xs text-[#8B9BB4] font-bold uppercase">Client</span>
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Client</span>
                  </div>
               </div>
 
-              <input
-                type="text"
-                value={partnerName}
-                onChange={e => setPartnerName(e.target.value)}
-                placeholder="Her name..."
-                className="w-full text-center text-2xl px-6 py-4 rounded-2xl bg-white/5 border border-white/20 text-white focus:outline-none focus:border-white/50 mb-8 transition-all"
-                autoFocus
-              />
+              <div className="mb-8 text-left">
+                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Partner Name</label>
+                <input
+                  type="text"
+                  value={partnerName}
+                  onChange={e => setPartnerName(e.target.value)}
+                  placeholder="Enter designation..."
+                  className="input-premium text-left"
+                  autoFocus
+                />
+              </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="flex gap-4">
                 <button
                   onClick={() => setStep('character')}
-                  className="px-6 py-3 rounded-full font-bold text-[#8B9BB4] hover:text-white transition-colors"
+                  className="px-6 py-3 rounded-xl font-semibold transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
                 >
-                  ← Back
+                  Cancel
                 </button>
-                <button onClick={handleCreateRoom} disabled={isCreatingRoom || !partnerName.trim()} className="btn-primary px-8 py-3 w-full flex items-center justify-center">
-                  {isCreatingRoom ? (
-                    <span className="animate-pulse">Establishing Link...</span>
-                  ) : (
-                    "Generate Secure Room 🚀"
-                  )}
+                <button 
+                  onClick={handleCreateRoom} 
+                  disabled={isCreatingRoom || !partnerName.trim()} 
+                  className="btn-primary flex-1"
+                >
+                  {isCreatingRoom ? "Generating Link..." : "Initialize Session"}
                 </button>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
 
-        {/* STEP 3: INVITE LINK GENERATION */}
         {step === 'invite' && roomId && (
           <motion.div
             key="invite"
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
             className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative z-10"
           >
-            <motion.div className="glass-card p-10 w-full max-w-lg text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#00E5C8]/20 rounded-full blur-3xl -mr-10 -mt-10" />
+            <div className="glass-card p-10 w-full max-w-md text-center">
               
-              <div className="text-5xl mb-6">📡</div>
-              <h2 className="text-3xl font-bold mb-2 text-white">Connection Established</h2>
-              <p className="text-[#8B9BB4] mb-8">
-                Routing secure tunnel to Santa Clara. Send this encrypted link to {partnerName}.
+              {/* RESTORED AVATAR FOR THE INVITE SCREEN */}
+              <div className="flex justify-center mb-6">
+                <Image 
+                  src={selectedCharacter === 'baymax' ? '/baymax-wave.png' : '/toothless.png'} 
+                  alt="Ready" 
+                  width={80} height={80} 
+                  className="object-contain drop-shadow-md" 
+                />
+              </div>
+              
+              <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-main)' }}>Link Established</h2>
+              <p className="mb-8 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                Secure tunnel routed. Share this encrypted key with {partnerName} to begin synchronization.
               </p>
 
               <div 
                 onClick={copyInviteLink}
-                className="bg-black/40 border border-white/10 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-white/30 transition-all mb-8 group"
+                className="rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all mb-8 border"
+                style={{ backgroundColor: 'var(--bg-deep)', borderColor: 'var(--border-light)' }}
               >
-                <code className="text-[#00E5C8] font-mono text-sm sm:text-base truncate mr-4">
+                <code className="font-mono text-sm truncate mr-4" style={{ color: 'var(--accent-primary)' }}>
                   jennypooh.app/join/{roomId}
                 </code>
-                <div className="bg-white/10 p-2 rounded-lg group-hover:bg-white/20 transition-all">
-                  {copied ? '✅' : '📋'}
+                <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-card)' }}>
+                  📋
                 </div>
               </div>
 
-              <p className="text-xs text-[#8B9BB4] italic mb-8">
-                {copied ? "Copied to clipboard! Text it over." : "Tap the link to copy."}
-              </p>
-
-              <button onClick={() => router.push('/scenarios')} className="btn-primary w-full py-4 text-lg">
-                Enter Diagnostic Bay →
+              <button onClick={() => router.push('/scenarios')} className="btn-primary w-full py-4">
+                Enter Diagnostic Bay
               </button>
-            </motion.div>
+            </div>
           </motion.div>
         )}
 
