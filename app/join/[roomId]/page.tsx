@@ -24,7 +24,6 @@ export default function JoinRoom() {
   }
 
   useEffect(() => {
-    // Check if she's already in a room
     if (typeof window !== 'undefined' && localStorage.getItem('roomId') === roomId) {
       router.push('/scenarios')
       return
@@ -32,16 +31,17 @@ export default function JoinRoom() {
 
     const fetchRoomData = async () => {
       try {
-        // 🚀 READ FROM FIREBASE
         const roomRef = doc(db, "rooms", roomId as string);
         const roomSnap = await getDoc(roomRef);
 
         if (roomSnap.exists()) {
           const data = roomSnap.data();
-          setHostName(data.host.name); // Pulls 'Andrew' from the DB
-          setAssignedCharacter(data.client.character); // Pulls whatever the opposite character is
+          setHostName(data.host.name); 
+          setAssignedCharacter(data.client.character); 
           
-          // Slight delay to allow the 'terminal' effect to play
+          // Set theme temporarily to match assigned character for the reveal
+          document.body.setAttribute('data-theme', data.client.character)
+          
           setTimeout(() => setStep('accept'), 1800);
         } else {
           setStep('error');
@@ -61,18 +61,15 @@ export default function JoinRoom() {
     triggerHaptic()
 
     try {
-      // 🚀 UPDATE FIREBASE to let your device know she joined
       await updateDoc(doc(db, "rooms", roomId as string), {
         status: 'active'
       })
 
-      // Lock in her local context
       localStorage.setItem('myCharacter', assignedCharacter)
       localStorage.setItem('partnerName', hostName)
       localStorage.setItem('roomId', roomId as string)
-      localStorage.setItem('userRole', 'client') // Marks her device as Player 2
+      localStorage.setItem('userRole', 'client') 
       
-      // Set the CSS theme to her character
       document.body.setAttribute('data-theme', assignedCharacter)
 
       setTimeout(() => {
@@ -85,39 +82,39 @@ export default function JoinRoom() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[#080B10]">
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden transition-colors duration-500">
       <AnimatePresence mode="wait">
 
-        {/* STEP 1: DECRYPTING PAYLOAD (Terminal aesthetic for Jenny) */}
+        {/* STEP 1: DECRYPTING PAYLOAD */}
         {step === 'decrypting' && (
           <motion.div 
             key="decrypting"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             className="w-full max-w-md font-mono text-sm"
           >
-            <div className="glass-card p-8 border-[#00E5C8]/30">
-              <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+            <div className="glass-card p-8 text-left">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b" style={{ borderColor: 'var(--border-light)' }}>
                 <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-[#8B9BB4] ml-2">tunnel_auth.sh</span>
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                <span className="ml-2 font-semibold" style={{ color: 'var(--text-muted)' }}>tunnel_auth.sh</span>
               </div>
               
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                className="text-[#00E5C8] mb-2"
+                className="mb-2 font-medium" style={{ color: 'var(--accent-primary)' }}
               >
                 &gt; Requesting handshake via port 443... [OK]
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
-                className="text-[#00E5C8] mb-2"
+                className="mb-2 font-medium" style={{ color: 'var(--accent-primary)' }}
               >
                 &gt; Validating session token: {roomId}... [OK]
               </motion.div>
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }}
-                className="text-[#B68AFF] mb-2"
+                className="mb-2 font-medium" style={{ color: 'var(--text-main)' }}
               >
                 &gt; Decrypting host identification...
               </motion.div>
@@ -127,9 +124,9 @@ export default function JoinRoom() {
 
         {/* STEP 2: ERROR STATE */}
         {step === 'error' && (
-          <motion.div key="error" className="glass-card p-8 text-center border-red-500/30">
-             <h2 className="text-white text-xl font-bold mb-2">Connection Failed</h2>
-             <p className="text-[#8B9BB4]">Invalid or expired Room ID.</p>
+          <motion.div key="error" className="glass-card p-8 text-center" style={{ borderColor: '#FF6B6B' }}>
+             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Connection Failed</h2>
+             <p style={{ color: 'var(--text-muted)' }}>Invalid or expired Room ID.</p>
           </motion.div>
         )}
 
@@ -140,31 +137,30 @@ export default function JoinRoom() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-md relative z-10"
           >
-            <div className="glass-card p-8 md:p-10 text-center relative overflow-hidden">
-              {/* Background Glow */}
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl -mr-10 -mt-10 ${assignedCharacter === 'toothless' ? 'bg-[#00E5C8]/20' : 'bg-[#3A85C8]/20'}`} />
-
+            <div className="glass-card p-8 md:p-12 text-center relative overflow-hidden">
               <div className="text-4xl mb-4">🔐</div>
-              <h1 className="text-3xl font-bold mb-2 text-white">Incoming Link</h1>
-              <p className="text-[#8B9BB4] mb-8 pb-8 border-b border-white/10">
-                <strong className="text-white">{hostName}</strong> has invited you to synchronize diagnostic data.
+              <h1 className="text-3xl font-extrabold mb-3 tracking-tight" style={{ color: 'var(--text-main)' }}>Incoming Link</h1>
+              
+              <p className="mb-8 pb-8 border-b text-sm leading-relaxed" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-light)' }}>
+                <strong style={{ color: 'var(--text-main)' }}>{hostName}</strong> has invited you to synchronize diagnostic data.
               </p>
 
               <div className="flex flex-col items-center mb-10">
-                <p className="text-sm font-bold uppercase tracking-widest text-[#8B9BB4] mb-4">
+                <p className="text-xs font-bold uppercase tracking-widest mb-6" style={{ color: 'var(--text-muted)' }}>
                   Your Assigned Companion
                 </p>
                 <motion.div
-                  animate={{ y: [0, -8, 0] }}
+                  animate={{ y: [0, -6, 0] }}
                   transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                  className="w-32 h-32 relative flex items-center justify-center mb-6"
                 >
                   {assignedCharacter === 'toothless' ? (
-                     <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-32 h-32 object-contain drop-shadow-2xl mb-4" />
+                     <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-full h-full object-contain drop-shadow-2xl rounded-full" />
                   ) : (
-                     <Image src="/baymax.gif" alt="Baymax" width={140} height={140} className="object-contain drop-shadow-2xl mb-4" unoptimized />
+                     <Image src="/baymax.gif" alt="Baymax" width={140} height={140} className="object-contain drop-shadow-2xl" unoptimized />
                   )}
                 </motion.div>
-                <h2 className={`text-2xl font-bold ${assignedCharacter === 'toothless' ? 'text-[#00E5C8] font-serif' : 'text-[#3A85C8]'}`}>
+                <h2 className={`text-2xl font-bold ${assignedCharacter === 'toothless' ? 'font-serif' : ''}`} style={{ color: 'var(--text-main)' }}>
                   {assignedCharacter === 'toothless' ? 'Toothless' : 'Baymax'}
                 </h2>
               </div>
