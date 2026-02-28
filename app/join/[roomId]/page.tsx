@@ -4,15 +4,14 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
-
-// import { doc, getDoc, updateDoc } from 'firebase/firestore'
-// import { db } from '@/firebase'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
+import { db } from '@/firebase'
 
 export default function JoinRoom() {
   const { roomId } = useParams()
   const router = useRouter()
   
-  const [step, setStep] = useState<'decrypting' | 'accept'>('decrypting')
+  const [step, setStep] = useState<'decrypting' | 'accept' | 'error'>('decrypting')
   const [hostName, setHostName] = useState('Andrew')
   const [assignedCharacter, setAssignedCharacter] = useState<string | null>(null)
   const [isJoining, setIsJoining] = useState(false)
@@ -26,26 +25,30 @@ export default function JoinRoom() {
 
   useEffect(() => {
     // Check if she's already in a room
-    if (localStorage.getItem('roomId') === roomId) {
+    if (typeof window !== 'undefined' && localStorage.getItem('roomId') === roomId) {
       router.push('/scenarios')
       return
     }
 
-    // SIMULATED DATABASE FETCH
-    // In production, this would be a getDoc(doc(db, "rooms", roomId))
-    // to see what character Andrew picked, and assign her the opposite.
     const fetchRoomData = async () => {
       try {
-        // Mocking network delay
-        await new Promise(res => setTimeout(res, 2000))
-        
-        // Mock data (Assuming Andrew picked Baymax, so Jenny gets Toothless)
-        // If Firestore was active, you'd dynamically set this.
-        setAssignedCharacter('toothless')
-        setStep('accept')
-        
+        // 🚀 READ FROM FIREBASE
+        const roomRef = doc(db, "rooms", roomId as string);
+        const roomSnap = await getDoc(roomRef);
+
+        if (roomSnap.exists()) {
+          const data = roomSnap.data();
+          setHostName(data.host.name); // Pulls 'Andrew' from the DB
+          setAssignedCharacter(data.client.character); // Pulls whatever the opposite character is
+          
+          // Slight delay to allow the 'terminal' effect to play
+          setTimeout(() => setStep('accept'), 1800);
+        } else {
+          setStep('error');
+        }
       } catch (error) {
         console.error("Failed to fetch room:", error)
+        setStep('error');
       }
     }
 
@@ -57,25 +60,28 @@ export default function JoinRoom() {
     setIsJoining(true)
     triggerHaptic()
 
-    // 🚀 FIREBASE INTEGRATION (Uncomment when db is ready)
-    /*
-    await updateDoc(doc(db, "rooms", roomId as string), {
-      status: 'active',
-      "jenny.joinedAt": Date.now()
-    })
-    */
+    try {
+      // 🚀 UPDATE FIREBASE to let your device know she joined
+      await updateDoc(doc(db, "rooms", roomId as string), {
+        status: 'active'
+      })
 
-    // Lock in her local context
-    localStorage.setItem('myCharacter', assignedCharacter)
-    localStorage.setItem('partnerName', hostName)
-    localStorage.setItem('roomId', roomId as string)
-    
-    // Set the CSS theme to her character
-    document.body.setAttribute('data-theme', assignedCharacter)
+      // Lock in her local context
+      localStorage.setItem('myCharacter', assignedCharacter)
+      localStorage.setItem('partnerName', hostName)
+      localStorage.setItem('roomId', roomId as string)
+      localStorage.setItem('userRole', 'client') // Marks her device as Player 2
+      
+      // Set the CSS theme to her character
+      document.body.setAttribute('data-theme', assignedCharacter)
 
-    setTimeout(() => {
-      router.push('/scenarios')
-    }, 1000)
+      setTimeout(() => {
+        router.push('/scenarios')
+      }, 1000)
+    } catch (e) {
+      console.error(e)
+      setIsJoining(false)
+    }
   }
 
   return (
@@ -119,7 +125,15 @@ export default function JoinRoom() {
           </motion.div>
         )}
 
-        {/* STEP 2: ACCEPT CONNECTION */}
+        {/* STEP 2: ERROR STATE */}
+        {step === 'error' && (
+          <motion.div key="error" className="glass-card p-8 text-center border-red-500/30">
+             <h2 className="text-white text-xl font-bold mb-2">Connection Failed</h2>
+             <p className="text-[#8B9BB4]">Invalid or expired Room ID.</p>
+          </motion.div>
+        )}
+
+        {/* STEP 3: ACCEPT CONNECTION */}
         {step === 'accept' && assignedCharacter && (
           <motion.div 
             key="accept"
@@ -144,12 +158,11 @@ export default function JoinRoom() {
                   animate={{ y: [0, -8, 0] }}
                   transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
                 >
-                  <Image 
-                    src={`/${assignedCharacter}.png`} 
-                    alt={assignedCharacter} 
-                    width={140} height={140} 
-                    className="object-contain drop-shadow-2xl mb-4"
-                  />
+                  {assignedCharacter === 'toothless' ? (
+                     <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-32 h-32 object-contain drop-shadow-2xl mb-4" />
+                  ) : (
+                     <Image src="/baymax.gif" alt="Baymax" width={140} height={140} className="object-contain drop-shadow-2xl mb-4" unoptimized />
+                  )}
                 </motion.div>
                 <h2 className={`text-2xl font-bold ${assignedCharacter === 'toothless' ? 'text-[#00E5C8] font-serif' : 'text-[#3A85C8]'}`}>
                   {assignedCharacter === 'toothless' ? 'Toothless' : 'Baymax'}

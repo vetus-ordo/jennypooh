@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { characters } from '@/lib/data'
+import { doc, setDoc } from 'firebase/firestore'
+import { db } from '@/firebase'
 
 export default function Home() {
   const router = useRouter()
@@ -38,11 +40,21 @@ export default function Home() {
     triggerHaptic()
 
     const newRoomId = Math.random().toString(36).substring(2, 10)
+    const partnerCharacter = selectedCharacter === 'baymax' ? 'toothless' : 'baymax'
     
     try {
+      // 🚀 WRITE TO FIREBASE
+      await setDoc(doc(db, "rooms", newRoomId), {
+        createdAt: Date.now(),
+        status: 'waiting',
+        host: { name: 'Andrew', character: selectedCharacter, answers: {} },
+        client: { name: partnerName.trim() || 'Jenny', character: partnerCharacter, answers: {} }
+      })
+
       localStorage.setItem('myCharacter', selectedCharacter)
-      localStorage.setItem('partnerName', partnerName.trim())
+      localStorage.setItem('partnerName', partnerName.trim() || 'Jenny')
       localStorage.setItem('roomId', newRoomId)
+      localStorage.setItem('userRole', 'host') // Marks your device as Player 1
       
       setTimeout(() => {
         setRoomId(newRoomId)
