@@ -28,29 +28,29 @@ function useCountUp(target: number, duration = 1400) {
 }
 
 function Confetti({ active }: { active: boolean }) {
-  const colors = ['#00E5C8', '#4FC3F7', '#3A85C8', '#FF6B6B', '#FFD700', '#7B5EA7']
+  const hearts = ['❤️', '💚', '💜', '💛', '✨', '💖']
   if (!active) return null
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
-      {Array.from({ length: 48 }).map((_, i) => (
+      {Array.from({ length: 40 }).map((_, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-sm"
+          className="absolute text-center select-none"
           style={{
-            width: Math.random() * 10 + 6,
-            height: Math.random() * 10 + 6,
-            background: colors[i % colors.length],
+            fontSize: Math.random() * 14 + 10,
             left: `${Math.random() * 100}%`,
-            top: -20,
+            top: -30,
           }}
           animate={{
-            y: ['0vh', '115vh'],
-            x: [0, (Math.random() - 0.5) * 260],
-            rotate: [0, Math.random() * 720],
-            opacity: [1, 0.8, 0],
+            y: ['0vh', '110vh'],
+            x: [0, (Math.random() - 0.5) * 200],
+            rotate: [0, (Math.random() - 0.5) * 360],
+            opacity: [1, 0.9, 0],
           }}
-          transition={{ duration: Math.random() * 2 + 1.5, delay: Math.random() * 0.8, ease: 'easeIn' }}
-        />
+          transition={{ duration: Math.random() * 2.5 + 2, delay: Math.random() * 1, ease: 'easeIn' }}
+        >
+          {hearts[i % hearts.length]}
+        </motion.div>
       ))}
     </div>
   )
@@ -271,7 +271,7 @@ export default function Results() {
   useEffect(() => {
     if (weightedScorePercent >= 70 && !confettiFired.current && totalAnswered > 0 && scoreReady) {
       confettiFired.current = true
-      setTimeout(() => { setShowConfetti(true); setTimeout(() => setShowConfetti(false), 3500) }, 400)
+      setTimeout(() => { setShowConfetti(true); setTimeout(() => setShowConfetti(false), 4000) }, 1600)
     }
   }, [weightedScorePercent, totalAnswered, scoreReady])
 
@@ -476,9 +476,14 @@ export default function Results() {
       {/* ── Empty state ── */}
       {totalAnswered === 0 && (
         <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
-          <div className="text-6xl mb-5">🤔</div>
-          <p className="text-xl font-semibold mb-2" style={{ color: 'var(--text-main)' }}>Nothing here yet</p>
-          <p>Once you connect via Firebase, responses will appear here!</p>
+          <div className="flex justify-center mb-6">
+            <CharacterDisplay character="baymax" variant="static" size={72} floatLoop floatDelay={0} />
+            <span className="text-4xl mx-4 self-center">💌</span>
+            <CharacterDisplay character="toothless" variant="static" size={72} floatLoop floatDelay={1.5} mirrored />
+          </div>
+          <p className="text-xl font-semibold mb-2" style={{ color: 'var(--text-main)' }}>Waiting for both players...</p>
+          <p className="mb-1">{myName}: {Object.keys(myData).length}/{totalScenarios} completed</p>
+          <p>{partnerName}: {partnerAnsweredCount}/{totalScenarios} completed</p>
           <Link href="/scenarios" className="btn-primary inline-block mt-6 text-base px-8 py-3">
             ← Back to Scenarios
           </Link>

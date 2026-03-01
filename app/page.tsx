@@ -12,8 +12,8 @@ import CharacterDisplay from '@/components/CharacterDisplay'
 export default function Home() {
   const router = useRouter()
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
-  const [myName, setMyName] = useState('Andrew')
-  const [partnerName, setPartnerName] = useState('Jenny')
+  const [myName, setMyName] = useState('')
+  const [partnerName, setPartnerName] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isCreatingRoom, setIsCreatingRoom] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
@@ -47,8 +47,8 @@ export default function Home() {
 
     const newRoomId = Math.random().toString(36).substring(2, 10)
     const partnerCharacter = selectedCharacter === 'baymax' ? 'toothless' : 'baymax'
-    const resolvedMyName = myName.trim() || 'Andrew'
-    const resolvedPartnerName = partnerName.trim() || 'Jenny'
+    const resolvedMyName = myName.trim() || 'Player 1'
+    const resolvedPartnerName = partnerName.trim() || 'Player 2'
 
     try {
       await setDoc(doc(db, 'rooms', newRoomId), {
@@ -265,7 +265,7 @@ export default function Home() {
 
                 <div className="text-xl pb-8" style={{ color: 'var(--text-muted)' }}>↔</div>
 
-                <div className="flex flex-col items-center gap-2" style={{ opacity: 0.85 }}>
+                <div className="flex flex-col items-center gap-2">
                   {/* Partner: CharacterDisplay gif + mirrored so they face the user's character */}
                   <CharacterDisplay
                     character={partnerCharacter as 'baymax' | 'toothless'}
