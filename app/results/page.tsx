@@ -7,9 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { scenarioData, characters, categoryGroups } from '@/lib/data'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase'
+import CharacterDisplay from '@/components/CharacterDisplay'
 import VideoCharacter from '@/components/VideoCharacter'
 
-// ─── Utilities ───────────────────────────────────────────────────────────────
+// ─── Utilities ─────────────────────────────────────────────────────
 
 function useCountUp(target: number, duration = 1400) {
   const [count, setCount] = useState(0)
@@ -86,95 +87,85 @@ function CharAvatar({ character, size = 48 }: { character: string; size?: number
   )
 }
 
-// ─── Score-tier duo reaction header ──────────────────────────────────────────
+// ─── Score-tier duo reaction header ─────────────────────────────────────────────
 //  Both characters react together based on the weighted score.
-//  Uses every media asset:
-//    ≥90  → baymax-heart.gif   + toothless-lick.gif       (Soulmates)
-//    ≥70  → baymax-dance.gif   + toothless-fly.gif        (Pretty Aligned)
-//    ≥50  → baymax-wave.png    + toothless-fly.gif        (Work in Progress)
-//    <50  → baymax-soccer.mp4  + toothless-smack.mp4     (Opposites Attract)
-//  Before score reveal → static PNGs with gentle float
-// ─────────────────────────────────────────────────────────────────────────────
+//  Uses CharacterDisplay for all image-based reactions (handles float
+//  natively, consistent asset map, correct -12px amplitude).
+//  Videos reserved for <50 mismatch only — where the playful energy fits.
+//
+//  Asset map:
+//    pre-reveal → baymax.png        + toothless.png         (static, suspenseful)
+//    ≥90         → baymax-heart.gif  + toothless-lick.gif    (Soulmates)
+//    ≥70         → baymax-dance.gif  + toothless-fly.gif     (Pretty Aligned)
+//    ≥50         → baymax-wave.png   + toothless-fly.gif     (Work in Progress)
+//    <50         → baymax-soccer.mp4 + toothless-smack.mp4  (Opposites Attract)
+// ───────────────────────────────────────────────────────────────────
 function DuoReaction({ score, ready }: { score: number; ready: boolean }) {
-  const floatA = { animate: { y: [0, -10, 0] }, transition: { repeat: Infinity, duration: 3, ease: 'easeInOut' as const } }
-  const floatB = { animate: { y: [0, -10, 0] }, transition: { repeat: Infinity, duration: 3, ease: 'easeInOut' as const, delay: 1.5 } }
-
+  // Pre-reveal: static PNGs, suspenseful 💌 separator
   if (!ready) {
     return (
       <div className="flex items-center justify-center gap-8 mb-4">
-        <motion.div {...floatA}>
-          <Image src="/baymax.png" alt="Baymax" width={84} height={84} className="object-contain drop-shadow-xl" />
-        </motion.div>
+        <CharacterDisplay character="baymax" variant="static" size={84} floatLoop floatDelay={0} />
         <span className="text-4xl">💌</span>
-        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
-          <Image src="/toothless.png" alt="Toothless" width={84} height={84} className="object-contain drop-shadow-xl" />
-        </motion.div>
+        <CharacterDisplay character="toothless" variant="static" size={84} floatLoop floatDelay={1.5} mirrored />
       </div>
     )
   }
 
+  // ≥90 — Soulmates: baymax-heart.gif + toothless-lick.gif
   if (score >= 90) {
     return (
       <div className="flex items-center justify-center gap-8 mb-4">
-        <motion.div {...floatA}>
-          <Image src="/baymax-heart.gif" alt="Baymax" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
-        </motion.div>
+        <CharacterDisplay character="baymax" variant="heart" size={88} floatLoop floatDelay={0} />
         <span className="text-4xl">💍</span>
-        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
-          <Image src="/toothless-lick.gif" alt="Toothless" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
-        </motion.div>
+        <CharacterDisplay character="toothless" variant="lick" size={88} floatLoop floatDelay={1.5} mirrored />
       </div>
     )
   }
 
+  // ≥70 — Pretty Aligned: baymax-dance.gif + toothless-fly.gif
   if (score >= 70) {
     return (
       <div className="flex items-center justify-center gap-8 mb-4">
-        <motion.div {...floatA}>
-          <Image src="/baymax-dance.gif" alt="Baymax" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
-        </motion.div>
+        <CharacterDisplay character="baymax" variant="dance" size={88} floatLoop floatDelay={0} />
         <span className="text-4xl">💚</span>
-        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
-          <Image src="/toothless-fly.gif" alt="Toothless" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
-        </motion.div>
+        <CharacterDisplay character="toothless" variant="fly" size={88} floatLoop floatDelay={1.5} mirrored />
       </div>
     )
   }
 
+  // ≥50 — Work in Progress: baymax-wave.png + toothless-fly.gif
   if (score >= 50) {
     return (
       <div className="flex items-center justify-center gap-8 mb-4">
-        <motion.div {...floatA}>
-          <Image src="/baymax-wave.png" alt="Baymax" width={88} height={88} className="object-contain drop-shadow-2xl" />
-        </motion.div>
+        <CharacterDisplay character="baymax" variant="wave" size={88} floatLoop floatDelay={0} />
         <span className="text-4xl">🛠️</span>
-        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
-          <Image src="/toothless-fly.gif" alt="Toothless" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
-        </motion.div>
+        <CharacterDisplay character="toothless" variant="fly" size={88} floatLoop floatDelay={1.5} mirrored />
       </div>
     )
   }
 
   // <50 — Opposites Attract: baymax-soccer.mp4 + toothless-smack.mp4
+  // Videos fit the playful mismatch energy; mirrored prop on VideoCharacter
+  // replaces the previous caller-side <div style={scaleX(-1)}> workaround.
   return (
     <div className="flex items-center justify-center gap-8 mb-4">
       <VideoCharacter character="baymax" variant="soccer" size={88} floatLoop floatDelay={0} />
       <span className="text-4xl">⚡</span>
-      <div style={{ transform: 'scaleX(-1)' }}>
-        <VideoCharacter character="toothless" variant="smack" size={88} floatLoop floatDelay={1.5} />
-      </div>
+      <VideoCharacter character="toothless" variant="smack" size={88} floatLoop floatDelay={1.5} mirrored />
     </div>
   )
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Results() {
   const [myCharacter, setMyCharacter]           = useState('')
   const [partnerCharacter, setPartnerCharacter] = useState('')
+  const [myName, setMyName]                     = useState('You')
   const [partnerName, setPartnerName]           = useState('Partner')
 
-  const [myData, setMyData]         = useState<Record<string, any>>({})
+  const [myData, setMyData]           = useState<Record<string, any>>({})
   const [partnerData, setPartnerData] = useState<Record<string, any>>({})
 
   const [showConfetti, setShowConfetti] = useState(false)
@@ -187,6 +178,7 @@ export default function Results() {
     const myChar = localStorage.getItem('myCharacter') || 'baymax'
     setMyCharacter(myChar)
     setPartnerCharacter(myChar === 'baymax' ? 'toothless' : 'baymax')
+    setMyName(localStorage.getItem('myName') || 'You')
     setPartnerName(localStorage.getItem('partnerName') || 'Partner')
 
     // Always dual — results celebrate both characters equally
@@ -209,7 +201,7 @@ export default function Results() {
     return () => unsubscribe()
   }, [])
 
-  // ─── Weighted scoring ────────────────────────────────────────────────────
+  // ─── Weighted scoring ────────────────────────────────────────────────
   let totalPossiblePoints = 0
   let totalEarnedPoints   = 0
   let matches             = 0
@@ -256,8 +248,8 @@ export default function Results() {
     }
   }).filter(Boolean)
 
-  const totalAnswered       = report.length
-  const totalScenarios      = Object.keys(scenarioData).length
+  const totalAnswered        = report.length
+  const totalScenarios       = Object.keys(scenarioData).length
   const partnerAnsweredCount = Object.keys(partnerData).length
   const weightedScorePercent = totalPossiblePoints > 0
     ? Math.round((totalEarnedPoints / totalPossiblePoints) * 100)
@@ -284,7 +276,7 @@ export default function Results() {
   }, [weightedScorePercent, totalAnswered, scoreReady])
 
   const categoryScores = Object.entries(categoryGroups).map(([key, group]) => {
-    const cats       = report.filter((r: any) => r && r.category === key)
+    const cats        = report.filter((r: any) => r && r.category === key)
     const catPossible = cats.reduce((sum: number, r: any) => sum + (r?.avgImp || 0), 0)
     const catEarned   = cats.reduce((sum: number, r: any) => r?.isMatch ? sum + (r?.avgImp || 0) : sum, 0)
     return {
@@ -311,7 +303,7 @@ export default function Results() {
           </motion.div>
         </AnimatePresence>
         <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Compatibility Report</h1>
-        <p className="italic" style={{ color: 'var(--text-muted)' }}>You &amp; {partnerName}</p>
+        <p className="italic" style={{ color: 'var(--text-muted)' }}>{myName} &amp; {partnerName}</p>
       </motion.header>
 
       {/* ── Waiting banner ── */}
@@ -367,12 +359,16 @@ export default function Results() {
         >
           <div className="flex-1 glass-card p-5 text-center">
             <div className="text-3xl mb-2">🔮</div>
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>You Predicted Her</p>
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>
+              {myName} → {partnerName}
+            </p>
             <p className="text-2xl font-bold text-purple-400">{myCorrectGuesses} / {totalAnswered}</p>
           </div>
           <div className="flex-1 glass-card p-5 text-center">
             <div className="text-3xl mb-2">🧠</div>
-            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>She Predicted You</p>
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>
+              {partnerName} → {myName}
+            </p>
             <p className="text-2xl font-bold text-purple-400">{partnerCorrectGuesses} / {totalAnswered}</p>
           </div>
         </motion.div>
@@ -428,7 +424,7 @@ export default function Results() {
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1">
                   <CharAvatar character={myCharacter} size={18} />
-                  <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>You</p>
+                  <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>{myName}</p>
                 </div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}>{res.myAnswerText}</p>
                 {res.correctGuess && <p className="text-xs font-bold text-purple-400 mt-2">🔮 Guessed Correctly</p>}
@@ -503,7 +499,7 @@ export default function Results() {
               <Image src="/toothless.png" alt="Toothless" width={56} height={56} className="object-contain drop-shadow-xl" style={{ transform: 'scaleX(-1)' }} />
             </div>
             <div className="text-6xl font-bold mb-2" style={{ color: 'var(--accent-base)' }}>{weightedScorePercent}%</div>
-            <div className="text-xl font-bold mb-1" style={{ color: 'var(--text-main)' }}>You &amp; {partnerName}</div>
+            <div className="text-xl font-bold mb-1" style={{ color: 'var(--text-main)' }}>{myName} &amp; {partnerName}</div>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>jennypooh · Life Scenarios</p>
           </div>
         </motion.div>
