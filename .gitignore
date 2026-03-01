@@ -30,4 +30,3 @@ pnpm-debug.log*
 .env.production.local
 
 # Vercel
-.vercelpublic/baymax_frames/
