@@ -24,38 +24,40 @@ export default function JoinRoom() {
     }
   }
 
+  const fetchRoomData = async () => {
+    setStep('decrypting')
+    try {
+      const roomRef = doc(db, 'rooms', roomId as string)
+      const roomSnap = await getDoc(roomRef)
+
+      if (roomSnap.exists()) {
+        const data = roomSnap.data()
+        setHostName(data.host.name || 'Player 1')
+        setClientName(data.client.name || 'Player 2')
+        setAssignedCharacter(data.client.character)
+        setHostCharacter(data.host.character)
+
+        // Both characters present from the moment she arrives
+        document.body.setAttribute('data-theme', 'dual')
+
+        setTimeout(() => setStep('accept'), 1800)
+      } else {
+        setStep('error')
+      }
+    } catch (error) {
+      console.error('Failed to fetch room:', error)
+      setStep('error')
+    }
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('roomId') === roomId) {
       router.push('/scenarios')
       return
     }
 
-    const fetchRoomData = async () => {
-      try {
-        const roomRef = doc(db, 'rooms', roomId as string)
-        const roomSnap = await getDoc(roomRef)
-
-        if (roomSnap.exists()) {
-          const data = roomSnap.data()
-          setHostName(data.host.name || 'Andrew')
-          setClientName(data.client.name || 'Jenny')
-          setAssignedCharacter(data.client.character)
-          setHostCharacter(data.host.character)
-
-          // Both characters present from the moment she arrives
-          document.body.setAttribute('data-theme', 'dual')
-
-          setTimeout(() => setStep('accept'), 1800)
-        } else {
-          setStep('error')
-        }
-      } catch (error) {
-        console.error('Failed to fetch room:', error)
-        setStep('error')
-      }
-    }
-
     fetchRoomData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, router])
 
   const handleAccept = async () => {
@@ -129,9 +131,15 @@ export default function JoinRoom() {
 
         {/* STEP 2: ERROR */}
         {step === 'error' && (
-          <motion.div key="error" className="glass-card p-8 text-center" style={{ borderColor: '#FF6B6B' }}>
+          <motion.div key="error" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-card p-8 text-center" style={{ borderColor: '#FF6B6B' }}>
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Connection Failed</h2>
-            <p style={{ color: 'var(--text-muted)' }}>Invalid or expired Room ID.</p>
+            <p className="mb-4" style={{ color: 'var(--text-muted)' }}>Invalid or expired Room ID.</p>
+            <button
+              onClick={fetchRoomData}
+              className="btn-primary px-6 py-2.5 text-sm"
+            >
+              Try Again
+            </button>
           </motion.div>
         )}
 

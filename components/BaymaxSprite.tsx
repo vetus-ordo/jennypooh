@@ -33,6 +33,9 @@ export default function BaymaxSprite({
   const scaledH = Math.round((FRAME_H / FRAME_W) * size)
   const scaledSheetW = Math.round((SHEET_W / FRAME_W) * size)
 
+  // Dynamic keyframe name so the sprite works at any size
+  const animName = `bsp-${scaledSheetW}`
+
   const containerStyle: CSSProperties = {
     width:    size,
     height:   scaledH,
@@ -51,13 +54,20 @@ export default function BaymaxSprite({
     backgroundSize:      `${scaledSheetW}px ${scaledH}px`,
     backgroundRepeat:    'no-repeat',
     backgroundPosition:  '0 0',
-    animation:           `baymax-sprite ${DURATION}s steps(${FRAME_COUNT}) infinite`,
+    animation:           `${animName} ${DURATION}s steps(${FRAME_COUNT}) infinite`,
     animationDelay:      floatDelay ? `${floatDelay}s` : undefined,
     imageRendering:      'auto',
+    willChange:          'background-position',
   }
 
   const inner = (
     <div style={containerStyle} className={className} draggable={false}>
+      <style>{`
+        @keyframes ${animName} {
+          from { background-position-x: 0; }
+          to   { background-position-x: -${scaledSheetW}px; }
+        }
+      `}</style>
       <div style={stripStyle} />
     </div>
   )

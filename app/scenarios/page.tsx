@@ -6,16 +6,21 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { scenarioData, categoryGroups } from '@/lib/data'
 import { CharacterDuo } from '@/components/CharacterDisplay'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '@/firebase'
 
 export default function Scenarios() {
   const router = useRouter()
   const [myCharacter, setMyCharacter] = useState('')
   const [answeredMap, setAnsweredMap] = useState<Record<string, boolean>>({})
+  const [partnerName, setPartnerName] = useState('')
+  const [partnerAnswered, setPartnerAnswered] = useState(0)
   const total = Object.keys(scenarioData).length
 
   useEffect(() => {
     const char = localStorage.getItem('myCharacter') || ''
     setMyCharacter(char)
+    setPartnerName(localStorage.getItem('partnerName') || '')
     // Both characters share the stage from here on
     document.body.setAttribute('data-theme', 'dual')
     const map: Record<string, boolean> = {}
@@ -24,6 +29,21 @@ export default function Scenarios() {
       if (s.myAnswer) map[k] = true
     })
     setAnsweredMap(map)
+
+    // Listen for partner's progress in real-time
+    const roomId = localStorage.getItem('roomId')
+    const myRole = localStorage.getItem('userRole') || 'host'
+    const pRole = myRole === 'host' ? 'client' : 'host'
+    if (roomId) {
+      const unsubscribe = onSnapshot(doc(db, 'rooms', roomId), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data()
+          const pAnswers = data[pRole]?.answers || {}
+          setPartnerAnswered(Object.keys(pAnswers).length)
+        }
+      })
+      return () => unsubscribe()
+    }
   }, [])
 
   const completed = Object.values(answeredMap).filter(Boolean).length
@@ -137,6 +157,13 @@ export default function Scenarios() {
       })}
 
       <motion.div className="mt-4 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+        {partnerName && partnerAnswered < total && (
+          <p className="text-sm mb-3 font-semibold" style={{ color: 'var(--text-muted)' }}>
+            {partnerAnswered === 0
+              ? `Waiting for ${partnerName} to start...`
+              : `${partnerName} has completed ${partnerAnswered}/${total} scenarios`} 🐾
+          </p>
+        )}
         <Link href="/results" className="btn-blueprint inline-block text-lg px-10 py-4">
           View Compatibility Report 💌
         </Link>

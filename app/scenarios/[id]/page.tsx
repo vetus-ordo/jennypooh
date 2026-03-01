@@ -58,9 +58,12 @@ export default function ScenarioPage() {
   }
 
   // 🚀 SYNC TO CLOUD
+  const [saving, setSaving] = useState(false)
+
   const handleSave = async () => {
-    if (myAnswer && !saved) {
+    if (myAnswer && !saved && !saving) {
       triggerHaptic()
+      setSaving(true)
 
       const payload = {
         myAnswer,
@@ -70,14 +73,8 @@ export default function ScenarioPage() {
 
       // 1. Save locally for instant UI reaction
       localStorage.setItem(`scenario_${id}`, JSON.stringify(payload))
-      setSaved(true)
 
-      const msg = myCharacter === 'baymax'
-        ? '💙 Scanning complete. Response recorded.'
-        : '🐉 *approving tail wag*'
-      setToast(msg)
-
-      // 2. Push to Firestore
+      // 2. Push to Firestore — wait for it to complete
       try {
         const roomId = localStorage.getItem('roomId')
         const role = localStorage.getItem('userRole') || 'host'
@@ -87,12 +84,21 @@ export default function ScenarioPage() {
             [`${role}.answers.${id}`]: payload,
           })
         }
+
+        setSaved(true)
+        const msg = myCharacter === 'baymax'
+          ? '💙 Scanning complete. Response recorded.'
+          : '🐉 *approving tail wag*'
+        setToast(msg)
+
+        // 3. Route back to dashboard only after Firebase succeeds
+        setTimeout(() => router.push('/scenarios'), 1200)
       } catch (e) {
         console.error('Firebase sync error: ', e)
+        setSaving(false)
+        setToast('⚠️ Sync failed — tap Lock to retry')
+        setTimeout(() => setToast(null), 3000)
       }
-
-      // 3. Route back to dashboard
-      setTimeout(() => router.push('/scenarios'), 1200)
     }
   }
 
@@ -276,11 +282,12 @@ export default function ScenarioPage() {
             <motion.button
               key="save"
               onClick={handleSave}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              disabled={saving}
+              whileHover={{ scale: saving ? 1 : 1.05 }}
+              whileTap={{ scale: saving ? 1 : 0.95 }}
               className="btn-blueprint text-base"
             >
-              Lock Protocol 🔒
+              {saving ? 'Syncing...' : 'Lock Protocol 🔒'}
             </motion.button>
           ) : null}
         </AnimatePresence>

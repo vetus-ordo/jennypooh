@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Nunito, DM_Sans, Cinzel } from 'next/font/google'
 import './globals.css'
+import WanderingCharacters from '@/components/WanderingCharacters'
 
 const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito', weight: ['400','600','700','800'] })
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-body', weight: ['400','500','600'] })
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${nunito.variable} ${dmSans.variable} ${cinzel.variable} antialiased`}>
+        <WanderingCharacters />
         <div className="page-fade">{children}</div>
       </body>
     </html>
