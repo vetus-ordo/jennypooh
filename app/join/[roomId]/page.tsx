@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/firebase'
-import { CharacterDuo } from '@/components/CharacterDisplay'
 import VideoCharacter from '@/components/VideoCharacter'
 
 export default function JoinRoom() {
@@ -43,7 +42,7 @@ export default function JoinRoom() {
           setAssignedCharacter(data.client.character)
           setHostCharacter(data.host.character)
 
-          // Both characters present from the moment Jenny arrives
+          // Both characters present from the moment she arrives
           document.body.setAttribute('data-theme', 'dual')
 
           setTimeout(() => setStep('accept'), 1800)
@@ -75,7 +74,6 @@ export default function JoinRoom() {
       localStorage.setItem('roomId', roomId as string)
       localStorage.setItem('userRole', 'client')
 
-      // Preserve dual theme on entry into scenarios
       document.body.setAttribute('data-theme', 'dual')
 
       setTimeout(() => router.push('/scenarios'), 1000)
@@ -85,11 +83,9 @@ export default function JoinRoom() {
     }
   }
 
-  // Determine which side is "you" vs "them" for the duo display
-  const baymaxOwner  = hostCharacter === 'baymax'    ? hostName    : clientName
-  const toothlessOwner = hostCharacter === 'toothless' ? hostName    : clientName
-  const baymaxIsMe   = assignedCharacter === 'baymax'
-  const toothlessIsMe = assignedCharacter === 'toothless'
+  // Name labels: Baymax side owner vs Toothless side owner
+  const baymaxOwner    = hostCharacter === 'baymax'    ? hostName : clientName
+  const toothlessOwner = hostCharacter === 'toothless' ? hostName : clientName
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden transition-colors duration-500">
@@ -139,7 +135,7 @@ export default function JoinRoom() {
           </motion.div>
         )}
 
-        {/* STEP 3: ACCEPT — Both characters visible, assigned one highlighted */}
+        {/* STEP 3: ACCEPT — Both characters fully visible, equal presence, interactive */}
         {step === 'accept' && assignedCharacter && hostCharacter && (
           <motion.div
             key="accept"
@@ -148,75 +144,59 @@ export default function JoinRoom() {
           >
             <div className="glass-card p-8 md:p-10 text-center relative overflow-hidden">
 
-              {/* Both characters floating together — the whole point */}
-              <div className="flex justify-center gap-8 mb-6 mt-2">
-                {/* Baymax side */}
+              {/*
+               * Both characters shown with full opacity — no dimming.
+               * Baymax plays baymax-coffee.mp4 (calm, welcoming).
+               * Toothless plays toothless-courtship.mp4 (affectionate, excited).
+               * They float out of phase so they feel alive and interactive.
+               */}
+              <div className="flex justify-center gap-10 mb-6 mt-2">
+
+                {/* Baymax — baymax-coffee.mp4 */}
                 <motion.div className="flex flex-col items-center gap-2">
                   <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
                   >
-                    <VideoCharacter
-                      character="baymax"
-                      variant="idle"
-                      size={96}
-                      className={baymaxIsMe ? '' : 'opacity-55'}
-                    />
+                    <VideoCharacter character="baymax" variant="idle" size={96} />
                   </motion.div>
                   <div className="flex flex-col items-center gap-0.5">
-                    <span
-                      className="text-xs font-black uppercase tracking-widest duo-label-baymax"
-                    >
+                    <span className="text-xs font-black uppercase tracking-widest duo-label-baymax">
                       Baymax
                     </span>
-                    <span
-                      className="text-[10px] font-semibold"
-                      style={{ color: baymaxIsMe ? 'var(--text-main)' : 'var(--text-muted)' }}
-                    >
-                      {baymaxIsMe ? `▶ You` : baymaxOwner}
+                    <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
+                      {baymaxOwner}
                     </span>
                   </div>
                 </motion.div>
 
-                {/* Toothless side */}
+                {/* Toothless — toothless-courtship.mp4 */}
                 <motion.div className="flex flex-col items-center gap-2">
                   <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 1.5 }}
                   >
-                    <VideoCharacter
-                      character="toothless"
-                      variant="idle"
-                      size={96}
-                      className={toothlessIsMe ? '' : 'opacity-55'}
-                    />
+                    <VideoCharacter character="toothless" variant="idle" size={96} />
                   </motion.div>
                   <div className="flex flex-col items-center gap-0.5">
-                    <span
-                      className="text-xs font-black uppercase tracking-widest duo-label-toothless"
-                    >
+                    <span className="text-xs font-black uppercase tracking-widest duo-label-toothless">
                       Toothless
                     </span>
-                    <span
-                      className="text-[10px] font-semibold"
-                      style={{ color: toothlessIsMe ? 'var(--text-main)' : 'var(--text-muted)' }}
-                    >
-                      {toothlessIsMe ? `▶ You` : toothlessOwner}
+                    <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
+                      {toothlessOwner}
                     </span>
                   </div>
                 </motion.div>
               </div>
 
               <h1 className="text-2xl font-extrabold mb-2 tracking-tight" style={{ color: 'var(--text-main)' }}>
-                Incoming Link
+                You&rsquo;re Invited 💌
               </h1>
 
               <p className="mb-8 text-sm leading-relaxed pb-6 border-b" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-light)' }}>
-                <strong style={{ color: 'var(--text-main)' }}>{hostName}</strong> has invited you to synchronize.
-                Your companion is{' '}
-                <strong style={{ color: `var(--color-${assignedCharacter})` }}>
-                  {assignedCharacter === 'toothless' ? 'Toothless' : 'Baymax'}
-                </strong>.
+                <strong style={{ color: 'var(--text-main)' }}>{hostName}</strong> is waiting for you.
+                Both Baymax and Toothless will be with you the whole time —
+                you and <strong style={{ color: 'var(--text-main)' }}>{hostName}</strong> each have a companion for the journey.
               </p>
 
               <button
@@ -224,7 +204,7 @@ export default function JoinRoom() {
                 disabled={isJoining}
                 className="btn-primary w-full py-4 text-lg"
               >
-                {isJoining ? 'Synchronizing...' : 'Accept & Enter Bay →'}
+                {isJoining ? 'Synchronizing...' : 'Enter the Bay →'}
               </button>
             </div>
           </motion.div>
