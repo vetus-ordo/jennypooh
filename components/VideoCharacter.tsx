@@ -6,17 +6,20 @@ import { motion } from 'framer-motion'
 
 // ─────────────────────────────────────────
 //  VIDEO ASSET MAP
-//  Previously broke by trying /${character}.mp4 which doesn't exist.
 //  All videos use descriptive filenames — mapped here explicitly.
+//  baymax-coffee.mp4  → calm/ambient   (join page Baymax idle)
+//  baymax-soccer.mp4  → playful        (results <50 mismatch)
+//  toothless-courtship.mp4 → affectionate (join page Toothless idle)
+//  toothless-smack.mp4     → playful smack (results <50 mismatch)
 // ─────────────────────────────────────────
 const VIDEO_ASSETS: Record<string, Record<string, string>> = {
   baymax: {
-    idle:   '/baymax-coffee.mp4',   // Calm, ambient — loading screens & idle
-    soccer: '/baymax-soccer.mp4',   // Playful — mismatch / low-score moments
+    idle:   '/baymax-coffee.mp4',
+    soccer: '/baymax-soccer.mp4',
   },
   toothless: {
-    idle:   '/toothless-courtship.mp4', // Affectionate — join page & invite reveal
-    smack:  '/toothless-smack.mp4',     // Playful smack — mismatch / low-score moments
+    idle:   '/toothless-courtship.mp4',
+    smack:  '/toothless-smack.mp4',
   },
 }
 
@@ -36,6 +39,9 @@ interface Props {
   /** Delay the float loop to sync with CharacterDisplay duo patterns */
   floatDelay?: number
   rounded?: boolean
+  /** Flip horizontally — mirrors the character to face inward in duo layouts.
+   *  Matches the mirrored prop on CharacterDisplay for consistency. */
+  mirrored?: boolean
   className?: string
 }
 
@@ -46,11 +52,13 @@ export default function VideoCharacter({
   floatLoop = false,
   floatDelay = 0,
   rounded = false,
+  mirrored = false,
   className = '',
 }: Props) {
   const [videoError, setVideoError] = useState(false)
 
   const videoSrc = VIDEO_ASSETS[character]?.[variant] ?? VIDEO_ASSETS[character]?.['idle']
+  const mirrorStyle = mirrored ? { transform: 'scaleX(-1)' } as const : undefined
 
   const inner = videoError ? (
     <Image
@@ -75,11 +83,14 @@ export default function VideoCharacter({
     />
   )
 
-  if (!floatLoop) return <div className={className}>{inner}</div>
+  if (!floatLoop) return (
+    <div className={className} style={mirrorStyle}>{inner}</div>
+  )
 
   return (
     <motion.div
       className={className}
+      style={mirrorStyle}
       animate={{ y: [0, -12, 0] }}
       transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: floatDelay }}
     >
