@@ -135,7 +135,7 @@ export default function JoinRoom() {
           </motion.div>
         )}
 
-        {/* STEP 3: ACCEPT — Both characters fully visible, equal presence, interactive */}
+        {/* STEP 3: ACCEPT — Both characters fully visible, equal presence, facing each other */}
         {step === 'accept' && assignedCharacter && hostCharacter && (
           <motion.div
             key="accept"
@@ -148,18 +148,20 @@ export default function JoinRoom() {
                * Both characters shown with full opacity — no dimming.
                * Baymax plays baymax-coffee.mp4 (calm, welcoming).
                * Toothless plays toothless-courtship.mp4 (affectionate, excited).
-               * They float out of phase so they feel alive and interactive.
+               * floatLoop handles the float natively at -12px amplitude;
+               * mirrored on Toothless makes them face each other.
                */}
               <div className="flex justify-center gap-10 mb-6 mt-2">
 
                 {/* Baymax — baymax-coffee.mp4 */}
-                <motion.div className="flex flex-col items-center gap-2">
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                  >
-                    <VideoCharacter character="baymax" variant="idle" size={96} />
-                  </motion.div>
+                <div className="flex flex-col items-center gap-2">
+                  <VideoCharacter
+                    character="baymax"
+                    variant="idle"
+                    size={96}
+                    floatLoop
+                    floatDelay={0}
+                  />
                   <div className="flex flex-col items-center gap-0.5">
                     <span className="text-xs font-black uppercase tracking-widest duo-label-baymax">
                       Baymax
@@ -168,16 +170,18 @@ export default function JoinRoom() {
                       {baymaxOwner}
                     </span>
                   </div>
-                </motion.div>
+                </div>
 
-                {/* Toothless — toothless-courtship.mp4 */}
-                <motion.div className="flex flex-col items-center gap-2">
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 1.5 }}
-                  >
-                    <VideoCharacter character="toothless" variant="idle" size={96} />
-                  </motion.div>
+                {/* Toothless — toothless-courtship.mp4, mirrored to face Baymax */}
+                <div className="flex flex-col items-center gap-2">
+                  <VideoCharacter
+                    character="toothless"
+                    variant="idle"
+                    size={96}
+                    floatLoop
+                    floatDelay={1.5}
+                    mirrored
+                  />
                   <div className="flex flex-col items-center gap-0.5">
                     <span className="text-xs font-black uppercase tracking-widest duo-label-toothless">
                       Toothless
@@ -186,7 +190,7 @@ export default function JoinRoom() {
                       {toothlessOwner}
                     </span>
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               <h1 className="text-2xl font-extrabold mb-2 tracking-tight" style={{ color: 'var(--text-main)' }}>
@@ -195,7 +199,7 @@ export default function JoinRoom() {
 
               <p className="mb-8 text-sm leading-relaxed pb-6 border-b" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-light)' }}>
                 <strong style={{ color: 'var(--text-main)' }}>{hostName}</strong> is waiting for you.
-                Both Baymax and Toothless will be with you the whole time —
+                Both Baymax and Toothless will be with you the whole time &mdash;
                 you and <strong style={{ color: 'var(--text-main)' }}>{hostName}</strong> each have a companion for the journey.
               </p>
 
