@@ -8,7 +8,6 @@ import { characters } from '@/lib/data'
 import { doc, setDoc } from 'firebase/firestore'
 import { db } from '@/firebase'
 import CharacterDisplay from '@/components/CharacterDisplay'
-import VideoCharacter from '@/components/VideoCharacter'
 
 export default function Home() {
   const router = useRouter()
@@ -89,7 +88,7 @@ export default function Home() {
 
   const partnerCharacter = selectedCharacter === 'baymax' ? 'toothless' : 'baymax'
 
-  // ── Phase 1: Dual loading screen — both characters side by side ──
+  // ── Phase 1: Dual loading screen — lightweight static PNGs, no video on first paint ──
   if (isLoading) return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-8"
@@ -97,18 +96,25 @@ export default function Home() {
     >
       <div className="flex items-end gap-10">
         <div className="flex flex-col items-center gap-3">
-          <VideoCharacter
-            character="baymax" variant="idle" size={100}
-            floatLoop floatDelay={0} rounded
+          <CharacterDisplay
+            character="baymax"
+            variant="static"
+            size={100}
+            floatLoop
+            floatDelay={0}
           />
           <span className="text-xs font-bold tracking-widest uppercase duo-label-baymax">
             Baymax
           </span>
         </div>
         <div className="flex flex-col items-center gap-3">
-          <VideoCharacter
-            character="toothless" variant="idle" size={100}
-            floatLoop floatDelay={1.5} rounded
+          <CharacterDisplay
+            character="toothless"
+            variant="static"
+            size={100}
+            floatLoop
+            floatDelay={1.5}
+            mirrored
           />
           <span className="text-xs font-bold tracking-widest uppercase duo-label-toothless">
             Toothless
@@ -241,7 +247,7 @@ export default function Home() {
           >
             <div className="glass-card p-10 w-full max-w-md text-center">
 
-              {/* Duo header — host character + partner character, names update live as user types */}
+              {/* Duo header — host character + partner character facing each other, names update live */}
               <div className="flex justify-center items-end gap-8 mb-8">
                 <div className="flex flex-col items-center gap-2">
                   <CharacterDisplay
@@ -260,9 +266,14 @@ export default function Home() {
                 <div className="text-xl pb-8" style={{ color: 'var(--text-muted)' }}>↔</div>
 
                 <div className="flex flex-col items-center gap-2" style={{ opacity: 0.85 }}>
-                  <VideoCharacter
+                  {/* Partner: CharacterDisplay gif + mirrored so they face the user's character */}
+                  <CharacterDisplay
                     character={partnerCharacter as 'baymax' | 'toothless'}
-                    variant="idle" size={64} floatLoop floatDelay={1.5} rounded
+                    variant="gif"
+                    size={64}
+                    floatLoop
+                    floatDelay={1.5}
+                    mirrored
                   />
                   <span
                     className="text-xs font-bold uppercase tracking-wider"
@@ -351,7 +362,7 @@ export default function Home() {
           >
             <div className="glass-card p-10 w-full max-w-md text-center">
 
-              {/* Both characters celebrating the link — baymax waves, toothless does his lick */}
+              {/* Both characters celebrating the link — baymax waves, toothless licks */}
               <div className="flex justify-center items-end gap-10 mb-6">
                 <div className="flex flex-col items-center gap-2">
                   <CharacterDisplay
