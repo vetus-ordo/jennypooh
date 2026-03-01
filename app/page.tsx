@@ -11,67 +11,72 @@ import { db } from '@/firebase'
 export default function Home() {
   const router = useRouter()
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
+  const [myName, setMyName] = useState('Andrew')
   const [partnerName, setPartnerName] = useState('Jenny')
   const [isLoading, setIsLoading] = useState(true)
   const [isCreatingRoom, setIsCreatingRoom] = useState(false)
   const [roomId, setRoomId] = useState<string | null>(null)
   const [step, setStep] = useState<'character' | 'name' | 'invite'>('character')
-  
-  // Restored: UI States
+  const [inviteOrigin, setInviteOrigin] = useState('')
+
   const [copied, setCopied] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
     const savedRoom = localStorage.getItem('roomId')
-    if (savedRoom) { 
-      router.push(`/scenarios`) 
-    } else { 
-      setIsLoading(false) 
+    if (savedRoom) {
+      router.push(`/scenarios`)
+    } else {
+      setIsLoading(false)
     }
   }, [router])
 
   const triggerHaptic = () => {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(50);
+      window.navigator.vibrate(50)
     }
   }
 
   const handleCreateRoom = async () => {
     if (!selectedCharacter) return
     setIsCreatingRoom(true)
-    setErrorMsg(null) // Clear old errors
+    setErrorMsg(null)
     triggerHaptic()
 
     const newRoomId = Math.random().toString(36).substring(2, 10)
     const partnerCharacter = selectedCharacter === 'baymax' ? 'toothless' : 'baymax'
-    
+    const resolvedMyName = myName.trim() || 'Andrew'
+    const resolvedPartnerName = partnerName.trim() || 'Jenny'
+
     try {
-      await setDoc(doc(db, "rooms", newRoomId), {
+      await setDoc(doc(db, 'rooms', newRoomId), {
         createdAt: Date.now(),
         status: 'waiting',
-        host: { name: 'Andrew', character: selectedCharacter, answers: {} },
-        client: { name: partnerName.trim() || 'Jenny', character: partnerCharacter, answers: {} }
+        host: { name: resolvedMyName, character: selectedCharacter, answers: {} },
+        client: { name: resolvedPartnerName, character: partnerCharacter, answers: {} },
       })
 
       localStorage.setItem('myCharacter', selectedCharacter)
-      localStorage.setItem('partnerName', partnerName.trim() || 'Jenny')
+      localStorage.setItem('myName', resolvedMyName)
+      localStorage.setItem('partnerName', resolvedPartnerName)
       localStorage.setItem('roomId', newRoomId)
-      localStorage.setItem('userRole', 'host') 
-      
+      localStorage.setItem('userRole', 'host')
+
+      // Capture origin here (client-only) for safe display in invite step
+      setInviteOrigin(window.location.origin)
+
       setTimeout(() => {
         setRoomId(newRoomId)
         setStep('invite')
         setIsCreatingRoom(false)
       }, 1200)
-
     } catch (error: any) {
-      console.error("Failed to create room:", error)
-      setErrorMsg("Database Connection Failed. Ensure .env.local is configured properly.")
+      console.error('Failed to create room:', error)
+      setErrorMsg('Database Connection Failed. Ensure .env.local is configured properly.')
       setIsCreatingRoom(false)
     }
   }
 
-  // Restored: Visual Feedback for the user
   const copyInviteLink = () => {
     triggerHaptic()
     const url = `${window.location.origin}/join/${roomId}`
@@ -113,18 +118,22 @@ export default function Home() {
               {(['baymax', 'toothless'] as const).map((id) => {
                 const isSelected = selectedCharacter === id
                 const activeGif = id === 'baymax' ? '/baymax.gif' : '/toothless-fly.gif'
-                
+
                 return (
                   <motion.button
                     key={id}
-                    onClick={() => { setSelectedCharacter(id); document.body.setAttribute('data-theme', id); triggerHaptic(); }}
+                    onClick={() => {
+                      setSelectedCharacter(id)
+                      document.body.setAttribute('data-theme', id)
+                      triggerHaptic()
+                    }}
                     whileHover={{ y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     className={`glass-card p-8 text-left relative overflow-hidden flex flex-col group ${isSelected ? 'ring-2 ring-[var(--accent-primary)]' : ''}`}
                   >
-                    <motion.div 
+                    <motion.div
                       className="w-24 h-24 mb-6 relative z-10 mx-auto md:mx-0 flex items-center justify-center"
-                      animate={{ scale: isSelected ? 1.1 : 1 }} 
+                      animate={{ scale: isSelected ? 1.1 : 1 }}
                       transition={{ scale: { duration: 0.3 } }}
                     >
                       <Image
@@ -142,8 +151,8 @@ export default function Home() {
                         {characters[id].name}
                       </h2>
                       <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                        {id === 'baymax' 
-                          ? 'Your personal healthcare companion. Clinical, precise, and highly attuned to physiological stress markers.' 
+                        {id === 'baymax'
+                          ? 'Your personal healthcare companion. Clinical, precise, and highly attuned to physiological stress markers.'
                           : 'Night Fury. Intuitive, fiercely loyal, and highly responsive to environmental dynamics.'}
                       </p>
                     </div>
@@ -188,46 +197,61 @@ export default function Home() {
             <div className="glass-card p-10 w-full max-w-md text-center">
               <h2 className="text-3xl font-bold mb-3 tracking-tight" style={{ color: 'var(--text-main)' }}>Target Designation</h2>
               <p className="mb-8 text-sm" style={{ color: 'var(--text-muted)' }}>Establish secure routing protocol.</p>
-              
+
               <div className="flex justify-center items-center gap-6 mb-10">
-                 <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 flex items-center justify-center mb-2">
-                      {selectedCharacter === 'baymax' ? (
-                        <Image src="/baymax-wave.png" alt="You" width={64} height={64} className="object-contain drop-shadow-md" />
-                      ) : (
-                        <Image src="/toothless.png" alt="You" width={64} height={64} className="object-contain drop-shadow-md" />
-                      )}
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Host</span>
-                 </div>
-                 
-                 <div className="text-2xl" style={{ color: 'var(--text-muted)' }}>↔</div>
-                 
-                 <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 flex items-center justify-center mb-2 opacity-70">
-                      {partnerCharacter === 'baymax' ? (
-                        <Image src="/baymax.png" alt="Partner" width={64} height={64} className="object-contain drop-shadow-md" />
-                      ) : (
-                        <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-full h-full object-contain drop-shadow-md rounded-full" />
-                      )}
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Client</span>
-                 </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 flex items-center justify-center mb-2">
+                    {selectedCharacter === 'baymax' ? (
+                      <Image src="/baymax-wave.png" alt="You" width={64} height={64} className="object-contain drop-shadow-md" />
+                    ) : (
+                      <Image src="/toothless.png" alt="You" width={64} height={64} className="object-contain drop-shadow-md" />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Host</span>
+                </div>
+
+                <div className="text-2xl" style={{ color: 'var(--text-muted)' }}>↔</div>
+
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 flex items-center justify-center mb-2 opacity-70">
+                    {partnerCharacter === 'baymax' ? (
+                      <Image src="/baymax.png" alt="Partner" width={64} height={64} className="object-contain drop-shadow-md" />
+                    ) : (
+                      <video src="/toothless-courtship.mp4" autoPlay loop muted playsInline className="w-full h-full object-contain drop-shadow-md rounded-full" />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Client</span>
+                </div>
+              </div>
+
+              {/* Host name input — was previously hardcoded as 'Andrew' */}
+              <div className="mb-5 text-left">
+                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  value={myName}
+                  onChange={e => setMyName(e.target.value)}
+                  placeholder="Enter your name..."
+                  className="input-premium text-left"
+                  autoFocus
+                />
               </div>
 
               <div className="mb-8 text-left">
-                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Partner Name</label>
+                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Partner Name
+                </label>
                 <input
                   type="text"
                   value={partnerName}
                   onChange={e => setPartnerName(e.target.value)}
                   placeholder="Enter designation..."
                   className="input-premium text-left"
-                  autoFocus
                 />
               </div>
 
-              {/* Error Output */}
               {errorMsg && (
                 <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-semibold text-left">
                   ⚠️ {errorMsg}
@@ -242,12 +266,12 @@ export default function Home() {
                 >
                   Cancel
                 </button>
-                <button 
-                  onClick={handleCreateRoom} 
-                  disabled={isCreatingRoom || !partnerName.trim()} 
+                <button
+                  onClick={handleCreateRoom}
+                  disabled={isCreatingRoom || !partnerName.trim() || !myName.trim()}
                   className="btn-primary flex-1"
                 >
-                  {isCreatingRoom ? "Generating Link..." : "Initialize Session"}
+                  {isCreatingRoom ? 'Generating Link...' : 'Initialize Session'}
                 </button>
               </div>
             </div>
@@ -261,29 +285,28 @@ export default function Home() {
             className="min-h-screen flex flex-col items-center justify-center px-6 py-16 relative z-10"
           >
             <div className="glass-card p-10 w-full max-w-md text-center">
-              
               <div className="flex justify-center mb-6">
-                <Image 
-                  src={selectedCharacter === 'baymax' ? '/baymax-wave.png' : '/toothless.png'} 
-                  alt="Ready" 
-                  width={80} height={80} 
-                  className="object-contain drop-shadow-md" 
+                <Image
+                  src={selectedCharacter === 'baymax' ? '/baymax-wave.png' : '/toothless.png'}
+                  alt="Ready"
+                  width={80} height={80}
+                  className="object-contain drop-shadow-md"
                 />
               </div>
-              
+
               <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-main)' }}>Link Established</h2>
               <p className="mb-8 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 Secure tunnel routed. Share this encrypted key with {partnerName} to begin synchronization.
               </p>
 
-              {/* The Fix: copied state now triggers visual ✅ feedback */}
-              <div 
+              {/* Bug fix: display uses captured inviteOrigin instead of hardcoded domain */}
+              <div
                 onClick={copyInviteLink}
                 className="rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all mb-8 border hover:bg-black/5"
                 style={{ backgroundColor: 'var(--bg-deep)', borderColor: copied ? 'var(--accent-primary)' : 'var(--border-light)' }}
               >
                 <code className="font-mono text-sm truncate mr-4" style={{ color: 'var(--accent-primary)' }}>
-                  jennypooh.app/join/{roomId}
+                  {inviteOrigin}/join/{roomId}
                 </code>
                 <div className="p-2 rounded-lg transition-colors" style={{ backgroundColor: copied ? 'var(--accent-primary)' : 'var(--bg-card)', color: copied ? '#fff' : 'inherit' }}>
                   {copied ? '✅' : '📋'}
