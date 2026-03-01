@@ -7,17 +7,25 @@
    Focus: High-contrast, clean, Apple-esque
 ───────────────────────────────────────── */
 :root, body[data-theme='baymax'] {
-  --bg-deep:     #F8FAFC; /* Very light slate */
-  --bg-card:     #FFFFFF; /* Solid white card for readability */
-  --accent-primary: #0EA5E9; /* Professional blue */
+  --bg-deep:     #F8FAFC;
+  --bg-card:     #FFFFFF;
+  --bg-app:      rgba(15, 23, 42, 0.06);       /* Track backgrounds for progress bars */
+
+  --accent-primary:   #0EA5E9;                 /* Sky blue */
   --accent-secondary: #0284C7;
-  --accent-glow: rgba(14, 165, 233, 0.15);
-  
-  /* Text must be dark for light mode */
-  --text-main:   #0F172A; /* Near black */
-  --text-muted:  #64748B; /* Slate gray */
-  
-  --border-light: rgba(15, 23, 42, 0.08);
+  --accent-base:      #0EA5E9;                 /* Alias — data/score display color */
+  --accent-sage:      #22C55E;                 /* Green — completion/success states */
+  --accent-terra:     #F59E0B;                 /* Amber — resume / warm CTA */
+  --accent-glow:      rgba(14, 165, 233, 0.15);
+
+  --text-main:   #0F172A;
+  --text-muted:  #64748B;
+
+  --border-light:  rgba(15, 23, 42, 0.08);     /* Subtle borders on cards */
+  --border:        rgba(15, 23, 42, 0.15);     /* Standard interactive borders */
+  --border-subtle: rgba(15, 23, 42, 0.06);     /* Dividers inside cards */
+  --border-focus:  rgba(14, 165, 233, 0.50);   /* Focus/reveal button rings */
+
   --card-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05), 0 0 1px rgba(15, 23, 42, 0.1);
 }
 
@@ -26,17 +34,25 @@
    Focus: Sophisticated dark mode, vibrant accents
 ───────────────────────────────────────── */
 body[data-theme='toothless'] {
-  --bg-deep:     #0B0F19; /* Deep navy/black */
-  --bg-card:     rgba(20, 27, 45, 0.7); /* Deep slate glass */
-  --accent-primary: #00E5C8; /* Vibrant cyan */
+  --bg-deep:     #0B0F19;
+  --bg-card:     rgba(20, 27, 45, 0.7);
+  --bg-app:      rgba(255, 255, 255, 0.08);    /* Track backgrounds for progress bars */
+
+  --accent-primary:   #00E5C8;                 /* Vibrant cyan */
   --accent-secondary: #00B39E;
-  --accent-glow: rgba(0, 229, 200, 0.15);
-  
-  /* Text must be light for dark mode */
-  --text-main:   #F1F5F9; /* Off-white */
-  --text-muted:  #94A3B8; /* Slate gray */
-  
-  --border-light: rgba(241, 245, 249, 0.1);
+  --accent-base:      #00E5C8;                 /* Alias — data/score display color */
+  --accent-sage:      #4ADE80;                 /* Green — completion/success states */
+  --accent-terra:     #FBBF24;                 /* Amber — resume / warm CTA */
+  --accent-glow:      rgba(0, 229, 200, 0.15);
+
+  --text-main:   #F1F5F9;
+  --text-muted:  #94A3B8;
+
+  --border-light:  rgba(241, 245, 249, 0.10);
+  --border:        rgba(241, 245, 249, 0.15);
+  --border-subtle: rgba(241, 245, 249, 0.07);
+  --border-focus:  rgba(0, 229, 200, 0.40);
+
   --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
@@ -46,7 +62,8 @@ body[data-theme='toothless'] {
 body {
   background-color: var(--bg-deep);
   color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Nunito is the loaded font — fall back to system sans */
+  font-family: var(--font-nunito), var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   transition: background-color 0.4s ease, color 0.4s ease;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -113,6 +130,8 @@ body > * {
 
 /* ─────────────────────────────────────────
    PREMIUM CARDS
+   glass-card: padding handled inline per usage
+   blueprint-card: has built-in padding for scenario tiles
 ───────────────────────────────────────── */
 .glass-card, .blueprint-card {
   background: var(--bg-card);
@@ -120,6 +139,11 @@ body > * {
   border-radius: 20px;
   box-shadow: var(--card-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* blueprint-card carries its own padding for scenario tiles and progress blocks */
+.blueprint-card {
+  padding: 1.5rem;
 }
 
 body[data-theme='toothless'] .glass-card, 
@@ -197,6 +221,21 @@ body[data-theme='toothless'] .btn-blueprint {
 .tier-opposites { border: 1px solid #FF6B6B; background: rgba(255,107,107,0.1); }
 
 /* ─────────────────────────────────────────
+   DUO INTERACTION: side-by-side character pair
+   Used on home, join, results, and hub pages
+───────────────────────────────────────── */
+.duo-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.duo-wrap .duo-right {
+  transform: scaleX(-1); /* Mirror toothless so both face inward */
+}
+
+/* ─────────────────────────────────────────
    ANIMATIONS
 ───────────────────────────────────────── */
 @keyframes aurora {
@@ -212,6 +251,11 @@ body[data-theme='toothless'] .btn-blueprint {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-12px); }
+}
+
+@keyframes float-offset {
+  0%, 100% { transform: translateY(-8px); }
+  50%       { transform: translateY(4px); }
 }
 
 @keyframes draw-check {
