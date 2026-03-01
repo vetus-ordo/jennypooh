@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { scenarioData, categoryGroups } from '@/lib/data'
+import { CharacterDuo } from '@/components/CharacterDisplay'
 
 export default function Scenarios() {
   const router = useRouter()
@@ -16,7 +16,8 @@ export default function Scenarios() {
   useEffect(() => {
     const char = localStorage.getItem('myCharacter') || ''
     setMyCharacter(char)
-    document.body.setAttribute('data-theme', char)
+    // Both characters share the stage from here on
+    document.body.setAttribute('data-theme', 'dual')
     const map: Record<string, boolean> = {}
     Object.keys(scenarioData).forEach(k => {
       const s = JSON.parse(localStorage.getItem(`scenario_${k}`) || '{}')
@@ -32,21 +33,14 @@ export default function Scenarios() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-14">
       <motion.header className="text-center mb-10" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        {myCharacter && (
-          <motion.div
-            className="inline-block mb-4"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          >
-            <Image
-              src={`/${myCharacter}.png`}
-              alt={myCharacter}
-              width={96} height={96}
-              className="object-contain drop-shadow-2xl"
-              priority
-            />
-          </motion.div>
-        )}
+        {/* Both characters always visible in the hub header */}
+        <div className="flex justify-center mb-6">
+          <CharacterDuo
+            baymaxVariant="gif"
+            toothlessVariant="gif"
+            size={88}
+          />
+        </div>
         <h1 className="text-5xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Life Scenarios</h1>
         <p className="text-xl italic" style={{ color: 'var(--text-muted)' }}>How would you handle these situations?</p>
       </motion.header>
