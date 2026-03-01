@@ -2,38 +2,72 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
 import BaymaxSprite from './BaymaxSprite'
+import SpriteSheet from './SpriteSheet'
 
 // ─── Timing constants ─────────────────────────────────────────
-const BAYMAX_INITIAL_DELAY: [number, number]    = [8, 15]   // seconds range before first appearance
-const BAYMAX_INTERVAL: [number, number]         = [25, 50]  // seconds between appearances
-const BAYMAX_CROSS_DURATION: [number, number]   = [18, 25]  // seconds to cross viewport
+const BAYMAX_INITIAL_DELAY: [number, number]      = [8, 15]
+const BAYMAX_INTERVAL: [number, number]            = [25, 50]
+const BAYMAX_CROSS_DURATION: [number, number]      = [18, 25]
 
-const TOOTHLESS_INITIAL_DELAY: [number, number] = [15, 25]
-const TOOTHLESS_INTERVAL: [number, number]      = [30, 60]
-const TOOTHLESS_CROSS_DURATION: [number, number] = [12, 18]
+const TOOTHLESS_INITIAL_DELAY: [number, number]    = [15, 25]
+const TOOTHLESS_INTERVAL: [number, number]         = [30, 60]
+const TOOTHLESS_CROSS_DURATION: [number, number]   = [12, 18]
+
+const LIGHT_FURY_INITIAL_DELAY: [number, number]   = [20, 35]
+const LIGHT_FURY_INTERVAL: [number, number]        = [35, 65]
+const LIGHT_FURY_CROSS_DURATION: [number, number]  = [14, 22]
 
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min)
 }
 
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+// ─── Sprite definitions (all 384×216 per frame) ──────────────
+const TOOTHLESS_SPRITES = [
+  { src: '/toothless-flapping-sprite.png', frameCount: 46 },
+  { src: '/toothless-wings-sprite.png',    frameCount: 66 },
+]
+
+const LIGHT_FURY_SPRITES = [
+  { src: '/light-fury-sprite.png',   frameCount: 38 },
+  { src: '/light-fury-2-sprite.png', frameCount: 34 },
+  { src: '/light-fury-3-sprite.png', frameCount: 27 },
+  { src: '/light-fury-4-sprite.png', frameCount: 68 },
+]
+
+const SPRITE_FRAME_W = 384
+const SPRITE_FRAME_H = 216
+
 export default function WanderingCharacters() {
-  const [isMobile, setIsMobile] = useState(true) // default true to avoid SSR flash
+  // Desktop-first: default false so desktop renders immediately
+  const [isMobile, setIsMobile] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
 
-  // Baymax state
+  // ── Baymax state ──
   const [baymaxActive, setBaymaxActive] = useState(false)
   const [baymaxDir, setBaymaxDir] = useState<'ltr' | 'rtl'>('ltr')
   const baymaxTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const baymaxCross = useRef(rand(...BAYMAX_CROSS_DURATION))
 
-  // Toothless state
+  // ── Toothless state ──
   const [toothlessActive, setToothlessActive] = useState(false)
-  const [toothlessDir, setToothlessDir] = useState<'rtl' | 'ltr'>('rtl')
+  const [toothlessDir, setToothlessDir] = useState<'ltr' | 'rtl'>('rtl')
   const [toothlessY, setToothlessY] = useState(15)
+  const [toothlessSprite, setToothlessSprite] = useState(TOOTHLESS_SPRITES[0])
   const toothlessTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const toothlessCross = useRef(rand(...TOOTHLESS_CROSS_DURATION))
+
+  // ── Light Fury state ──
+  const [lightFuryActive, setLightFuryActive] = useState(false)
+  const [lightFuryDir, setLightFuryDir] = useState<'ltr' | 'rtl'>('ltr')
+  const [lightFuryY, setLightFuryY] = useState(20)
+  const [lightFurySprite, setLightFurySprite] = useState(LIGHT_FURY_SPRITES[0])
+  const lightFuryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lightFuryCross = useRef(rand(...LIGHT_FURY_CROSS_DURATION))
 
   // ── Media queries ──
   useEffect(() => {
@@ -48,20 +82,6 @@ export default function WanderingCharacters() {
     return () => { mq.removeEventListener('change', onMobile); rmq.removeEventListener('change', onMotion) }
   }, [])
 
-  // ── Pause when tab hidden ──
-  useEffect(() => {
-    const onVis = () => {
-      if (document.hidden) {
-        setBaymaxActive(false)
-        setToothlessActive(false)
-        if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
-        if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
-      }
-    }
-    document.addEventListener('visibilitychange', onVis)
-    return () => document.removeEventListener('visibilitychange', onVis)
-  }, [])
-
   const disabled = isMobile || reducedMotion
 
   // ── Schedule helpers ──
@@ -69,8 +89,7 @@ export default function WanderingCharacters() {
     if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
     const ms = (delay ?? rand(...BAYMAX_INTERVAL)) * 1000
     baymaxTimer.current = setTimeout(() => {
-      const dir = Math.random() > 0.5 ? 'ltr' : 'rtl' as const
-      setBaymaxDir(dir)
+      setBaymaxDir(Math.random() > 0.5 ? 'ltr' : 'rtl')
       baymaxCross.current = rand(...BAYMAX_CROSS_DURATION)
       setBaymaxActive(true)
     }, ms)
@@ -80,11 +99,23 @@ export default function WanderingCharacters() {
     if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
     const ms = (delay ?? rand(...TOOTHLESS_INTERVAL)) * 1000
     toothlessTimer.current = setTimeout(() => {
-      const dir = Math.random() > 0.5 ? 'ltr' : 'rtl' as const
-      setToothlessDir(dir)
+      setToothlessDir(Math.random() > 0.5 ? 'ltr' : 'rtl')
       setToothlessY(8 + Math.random() * 22)
+      setToothlessSprite(pick(TOOTHLESS_SPRITES))
       toothlessCross.current = rand(...TOOTHLESS_CROSS_DURATION)
       setToothlessActive(true)
+    }, ms)
+  }, [])
+
+  const scheduleLightFury = useCallback((delay?: number) => {
+    if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
+    const ms = (delay ?? rand(...LIGHT_FURY_INTERVAL)) * 1000
+    lightFuryTimer.current = setTimeout(() => {
+      setLightFuryDir(Math.random() > 0.5 ? 'ltr' : 'rtl')
+      setLightFuryY(10 + Math.random() * 25)
+      setLightFurySprite(pick(LIGHT_FURY_SPRITES))
+      lightFuryCross.current = rand(...LIGHT_FURY_CROSS_DURATION)
+      setLightFuryActive(true)
     }, ms)
   }, [])
 
@@ -93,11 +124,34 @@ export default function WanderingCharacters() {
     if (disabled) return
     scheduleBaymax(rand(...BAYMAX_INITIAL_DELAY))
     scheduleToothless(rand(...TOOTHLESS_INITIAL_DELAY))
+    scheduleLightFury(rand(...LIGHT_FURY_INITIAL_DELAY))
     return () => {
       if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
       if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
+      if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
     }
-  }, [disabled, scheduleBaymax, scheduleToothless])
+  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury])
+
+  // ── Pause when tab hidden, resume when visible ──
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden) {
+        setBaymaxActive(false)
+        setToothlessActive(false)
+        setLightFuryActive(false)
+        if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
+        if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
+        if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
+      } else if (!disabled) {
+        // Reschedule when tab becomes visible again
+        scheduleBaymax(rand(...BAYMAX_INITIAL_DELAY))
+        scheduleToothless(rand(...TOOTHLESS_INITIAL_DELAY))
+        scheduleLightFury(rand(...LIGHT_FURY_INITIAL_DELAY))
+      }
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury])
 
   // ── Completion handlers ──
   const onBaymaxDone = useCallback(() => {
@@ -110,10 +164,16 @@ export default function WanderingCharacters() {
     if (!document.hidden) scheduleToothless()
   }, [scheduleToothless])
 
+  const onLightFuryDone = useCallback(() => {
+    setLightFuryActive(false)
+    if (!document.hidden) scheduleLightFury()
+  }, [scheduleLightFury])
+
   if (disabled) return null
 
   const BAYMAX_SIZE = 70
-  const TOOTHLESS_SIZE = 54
+  const TOOTHLESS_SIZE = 64
+  const LIGHT_FURY_SIZE = 60
 
   return (
     <div
@@ -150,9 +210,9 @@ export default function WanderingCharacters() {
         {toothlessActive && (
           <motion.div
             key={`tl-${Date.now()}`}
-            initial={{ x: toothlessDir === 'ltr' ? -80 : 'calc(100vw + 80px)' }}
+            initial={{ x: toothlessDir === 'ltr' ? -100 : 'calc(100vw + 100px)' }}
             animate={{
-              x: toothlessDir === 'ltr' ? 'calc(100vw + 80px)' : -80,
+              x: toothlessDir === 'ltr' ? 'calc(100vw + 100px)' : -100,
               y: [0, -18, 8, -12, 0],
             }}
             transition={{
@@ -166,16 +226,48 @@ export default function WanderingCharacters() {
               opacity: 0.3,
             }}
           >
-            <Image
-              src="/toothless-fly.gif"
-              alt=""
-              width={TOOTHLESS_SIZE}
-              height={TOOTHLESS_SIZE}
-              className="object-contain"
-              unoptimized
-              style={{
-                transform: toothlessDir === 'ltr' ? 'scaleX(-1)' : undefined,
-              }}
+            <SpriteSheet
+              src={toothlessSprite.src}
+              frameWidth={SPRITE_FRAME_W}
+              frameHeight={SPRITE_FRAME_H}
+              frameCount={toothlessSprite.frameCount}
+              fps={14}
+              size={TOOTHLESS_SIZE}
+              mirrored={toothlessDir === 'ltr'}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── LIGHT FURY: glides through the mid-upper area ── */}
+      <AnimatePresence>
+        {lightFuryActive && (
+          <motion.div
+            key={`lf-${Date.now()}`}
+            initial={{ x: lightFuryDir === 'ltr' ? -100 : 'calc(100vw + 100px)' }}
+            animate={{
+              x: lightFuryDir === 'ltr' ? 'calc(100vw + 100px)' : -100,
+              y: [0, -14, 6, -10, 0],
+            }}
+            transition={{
+              x: { duration: lightFuryCross.current, ease: 'linear' },
+              y: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+            }}
+            onAnimationComplete={onLightFuryDone}
+            style={{
+              position: 'absolute',
+              top: `${lightFuryY}%`,
+              opacity: 0.28,
+            }}
+          >
+            <SpriteSheet
+              src={lightFurySprite.src}
+              frameWidth={SPRITE_FRAME_W}
+              frameHeight={SPRITE_FRAME_H}
+              frameCount={lightFurySprite.frameCount}
+              fps={12}
+              size={LIGHT_FURY_SIZE}
+              mirrored={lightFuryDir === 'rtl'}
             />
           </motion.div>
         )}
