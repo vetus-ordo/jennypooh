@@ -7,6 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { scenarioData, characters, categoryGroups } from '@/lib/data'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase'
+import VideoCharacter from '@/components/VideoCharacter'
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
 
 function useCountUp(target: number, duration = 1400) {
   const [count, setCount] = useState(0)
@@ -39,7 +42,12 @@ function Confetti({ active }: { active: boolean }) {
             left: `${Math.random() * 100}%`,
             top: -20,
           }}
-          animate={{ y: ['0vh', '115vh'], x: [0, (Math.random() - 0.5) * 260], rotate: [0, Math.random() * 720], opacity: [1, 0.8, 0] }}
+          animate={{
+            y: ['0vh', '115vh'],
+            x: [0, (Math.random() - 0.5) * 260],
+            rotate: [0, Math.random() * 720],
+            opacity: [1, 0.8, 0],
+          }}
           transition={{ duration: Math.random() * 2 + 1.5, delay: Math.random() * 0.8, ease: 'easeIn' }}
         />
       ))}
@@ -49,10 +57,10 @@ function Confetti({ active }: { active: boolean }) {
 
 function ScoreTierBanner({ score }: { score: number }) {
   const [label, emoji, tierClass] =
-    score >= 90 ? ['Soulmates', '💍', 'tier-soulmates']
-    : score >= 70 ? ['Pretty Aligned', '💚', 'tier-aligned']
+    score >= 90 ? ['Soulmates',          '💍', 'tier-soulmates']
+    : score >= 70 ? ['Pretty Aligned',   '💚', 'tier-aligned']
     : score >= 50 ? ['Work in Progress', '🛠️', 'tier-progress']
-    : ['Opposites Attract', '⚡', 'tier-opposites']
+    : ['Opposites Attract',              '⚡', 'tier-opposites']
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
@@ -64,37 +72,115 @@ function ScoreTierBanner({ score }: { score: number }) {
   )
 }
 
-function CharAvatar({ character, size = 48, animated = false }: { character: string; size?: number; animated?: boolean }) {
+// Small static avatar — used only for 18px scenario-card labels
+function CharAvatar({ character, size = 48 }: { character: string; size?: number }) {
   if (!character) return null
-  let source = `/${character}.png`
-  if (animated) {
-    source = character === 'baymax' ? '/baymax-heart.gif' : '/toothless-lick.gif'
-  }
   return (
     <Image
-      src={source}
+      src={`/${character}.png`}
       alt={character}
       width={size}
       height={size}
-      className={`object-contain inline-block ${animated ? 'drop-shadow-2xl' : 'drop-shadow-lg'}`}
-      unoptimized={animated}
+      className="object-contain inline-block drop-shadow-lg"
     />
   )
 }
+
+// ─── Score-tier duo reaction header ──────────────────────────────────────────
+//  Both characters react together based on the weighted score.
+//  Uses every media asset:
+//    ≥90  → baymax-heart.gif   + toothless-lick.gif       (Soulmates)
+//    ≥70  → baymax-dance.gif   + toothless-fly.gif        (Pretty Aligned)
+//    ≥50  → baymax-wave.png    + toothless-fly.gif        (Work in Progress)
+//    <50  → baymax-soccer.mp4  + toothless-smack.mp4     (Opposites Attract)
+//  Before score reveal → static PNGs with gentle float
+// ─────────────────────────────────────────────────────────────────────────────
+function DuoReaction({ score, ready }: { score: number; ready: boolean }) {
+  const floatA = { animate: { y: [0, -10, 0] }, transition: { repeat: Infinity, duration: 3, ease: 'easeInOut' as const } }
+  const floatB = { animate: { y: [0, -10, 0] }, transition: { repeat: Infinity, duration: 3, ease: 'easeInOut' as const, delay: 1.5 } }
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center gap-8 mb-4">
+        <motion.div {...floatA}>
+          <Image src="/baymax.png" alt="Baymax" width={84} height={84} className="object-contain drop-shadow-xl" />
+        </motion.div>
+        <span className="text-4xl">💌</span>
+        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
+          <Image src="/toothless.png" alt="Toothless" width={84} height={84} className="object-contain drop-shadow-xl" />
+        </motion.div>
+      </div>
+    )
+  }
+
+  if (score >= 90) {
+    return (
+      <div className="flex items-center justify-center gap-8 mb-4">
+        <motion.div {...floatA}>
+          <Image src="/baymax-heart.gif" alt="Baymax" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
+        </motion.div>
+        <span className="text-4xl">💍</span>
+        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
+          <Image src="/toothless-lick.gif" alt="Toothless" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
+        </motion.div>
+      </div>
+    )
+  }
+
+  if (score >= 70) {
+    return (
+      <div className="flex items-center justify-center gap-8 mb-4">
+        <motion.div {...floatA}>
+          <Image src="/baymax-dance.gif" alt="Baymax" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
+        </motion.div>
+        <span className="text-4xl">💚</span>
+        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
+          <Image src="/toothless-fly.gif" alt="Toothless" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
+        </motion.div>
+      </div>
+    )
+  }
+
+  if (score >= 50) {
+    return (
+      <div className="flex items-center justify-center gap-8 mb-4">
+        <motion.div {...floatA}>
+          <Image src="/baymax-wave.png" alt="Baymax" width={88} height={88} className="object-contain drop-shadow-2xl" />
+        </motion.div>
+        <span className="text-4xl">🛠️</span>
+        <motion.div {...floatB} style={{ transform: 'scaleX(-1)' }}>
+          <Image src="/toothless-fly.gif" alt="Toothless" width={88} height={88} className="object-contain drop-shadow-2xl" unoptimized />
+        </motion.div>
+      </div>
+    )
+  }
+
+  // <50 — Opposites Attract: baymax-soccer.mp4 + toothless-smack.mp4
+  return (
+    <div className="flex items-center justify-center gap-8 mb-4">
+      <VideoCharacter character="baymax" variant="soccer" size={88} floatLoop floatDelay={0} />
+      <span className="text-4xl">⚡</span>
+      <div style={{ transform: 'scaleX(-1)' }}>
+        <VideoCharacter character="toothless" variant="smack" size={88} floatLoop floatDelay={1.5} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Results() {
   const [myCharacter, setMyCharacter]           = useState('')
   const [partnerCharacter, setPartnerCharacter] = useState('')
   const [partnerName, setPartnerName]           = useState('Partner')
-  
-  // Real-time State
-  const [myData, setMyData]                     = useState<Record<string, any>>({})
-  const [partnerData, setPartnerData]           = useState<Record<string, any>>({})
-  
-  const [showConfetti, setShowConfetti]         = useState(false)
-  const [revealed, setRevealed]                 = useState<Record<number, boolean>>({})
-  const [scoreReady, setScoreReady]             = useState(false)
-  const [countdown, setCountdown]               = useState<number | null>(null)
+
+  const [myData, setMyData]         = useState<Record<string, any>>({})
+  const [partnerData, setPartnerData] = useState<Record<string, any>>({})
+
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [revealed, setRevealed]         = useState<Record<number, boolean>>({})
+  const [scoreReady, setScoreReady]     = useState(false)
+  const [countdown, setCountdown]       = useState<number | null>(null)
   const confettiFired = useRef(false)
 
   useEffect(() => {
@@ -102,77 +188,80 @@ export default function Results() {
     setMyCharacter(myChar)
     setPartnerCharacter(myChar === 'baymax' ? 'toothless' : 'baymax')
     setPartnerName(localStorage.getItem('partnerName') || 'Partner')
-    document.body.setAttribute('data-theme', myChar)
+
+    // Always dual — results celebrate both characters equally
+    document.body.setAttribute('data-theme', 'dual')
 
     const roomId = localStorage.getItem('roomId')
     const myRole = localStorage.getItem('userRole') || 'host'
     const pRole = myRole === 'host' ? 'client' : 'host'
 
-    if (!roomId) return;
+    if (!roomId) return
 
-    // 🚀 REAL-TIME FIREBASE SYNC
-    const unsubscribe = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+    const unsubscribe = onSnapshot(doc(db, 'rooms', roomId), (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        setMyData(data[myRole]?.answers || {});
-        setPartnerData(data[pRole]?.answers || {});
+        const data = docSnap.data()
+        setMyData(data[myRole]?.answers || {})
+        setPartnerData(data[pRole]?.answers || {})
       }
-    });
+    })
 
-    return () => unsubscribe();
+    return () => unsubscribe()
   }, [])
 
-  // Weighted Scoring Math
-  let totalPossiblePoints = 0;
-  let totalEarnedPoints = 0;
-  let matches = 0;
-  let myCorrectGuesses = 0;
-  let partnerCorrectGuesses = 0;
+  // ─── Weighted scoring ────────────────────────────────────────────────────
+  let totalPossiblePoints = 0
+  let totalEarnedPoints   = 0
+  let matches             = 0
+  let myCorrectGuesses    = 0
+  let partnerCorrectGuesses = 0
+
+  type ReactionKey = 'perfect' | 'good' | 'mismatch' | 'hilarious'
 
   const report = Object.entries(scenarioData).map(([key, scenario]) => {
-    const myAns = myData[key];
-    const pAns = partnerData[key];
-    
-    // Only compile report for questions BOTH people answered
-    if (!myAns?.myAnswer || !pAns?.myAnswer) return null;
+    const myAns = myData[key]
+    const pAns  = partnerData[key]
+    if (!myAns?.myAnswer || !pAns?.myAnswer) return null
 
-    const myIdx = scenario.options.findIndex(o => o.id === myAns.myAnswer)
+    const myIdx      = scenario.options.findIndex(o => o.id === myAns.myAnswer)
     const partnerIdx = scenario.options.findIndex(o => o.id === pAns.myAnswer)
-    const isMatch = myAns.myAnswer === pAns.myAnswer
-    
-    if (isMatch) matches++;
+    const isMatch    = myAns.myAnswer === pAns.myAnswer
 
-    const correctGuess = myAns.guessedPartnerAnswer === pAns.myAnswer;
-    if (correctGuess) myCorrectGuesses++;
-    if (pAns.guessedPartnerAnswer === myAns.myAnswer) partnerCorrectGuesses++;
+    if (isMatch) matches++
 
-    const myImp = Number(myAns.importance) || 3;
-    const pImp = Number(pAns.importance) || 3;
-    const avgImp = (myImp + pImp) / 2;
+    const correctGuess = myAns.guessedPartnerAnswer === pAns.myAnswer
+    if (correctGuess) myCorrectGuesses++
+    if (pAns.guessedPartnerAnswer === myAns.myAnswer) partnerCorrectGuesses++
 
-    totalPossiblePoints += avgImp;
-    if (isMatch) totalEarnedPoints += avgImp;
+    const myImp   = Number(myAns.importance) || 3
+    const pImp    = Number(pAns.importance)  || 3
+    const avgImp  = (myImp + pImp) / 2
 
-    const char = characters[myCharacter]
+    totalPossiblePoints += avgImp
+    if (isMatch) totalEarnedPoints += avgImp
+
     const bothLast = myIdx === scenario.options.length - 1 && partnerIdx === scenario.options.length - 1
-    const reaction = bothLast ? char.reactions.hilarious
-      : isMatch ? char.reactions.perfect
-      : Math.abs(myIdx - partnerIdx) <= 1 ? char.reactions.good
-      : char.reactions.mismatch
+    const reactionKey: ReactionKey =
+      bothLast ? 'hilarious'
+      : isMatch ? 'perfect'
+      : Math.abs(myIdx - partnerIdx) <= 1 ? 'good'
+      : 'mismatch'
 
     return {
       key, name: scenario.name, emoji: scenario.emoji, avgImp,
-      myAnswerText: scenario.options[myIdx]?.text,
+      myAnswerText:      scenario.options[myIdx]?.text,
       partnerAnswerText: scenario.options[partnerIdx]?.text,
-      isMatch, correctGuess, reaction,
+      isMatch, correctGuess, reactionKey,
       category: Object.entries(categoryGroups).find(([, g]) => g.ids.includes(key))?.[0] ?? 'other',
     }
   }).filter(Boolean)
 
-  const totalAnswered = report.length
-  const totalScenarios = Object.keys(scenarioData).length
+  const totalAnswered       = report.length
+  const totalScenarios      = Object.keys(scenarioData).length
   const partnerAnsweredCount = Object.keys(partnerData).length
-  const weightedScorePercent = totalPossiblePoints > 0 ? Math.round((totalEarnedPoints / totalPossiblePoints) * 100) : 0
+  const weightedScorePercent = totalPossiblePoints > 0
+    ? Math.round((totalEarnedPoints / totalPossiblePoints) * 100)
+    : 0
   const displayScore = useCountUp(scoreReady ? weightedScorePercent : 0)
 
   useEffect(() => {
@@ -195,12 +284,12 @@ export default function Results() {
   }, [weightedScorePercent, totalAnswered, scoreReady])
 
   const categoryScores = Object.entries(categoryGroups).map(([key, group]) => {
-    const cats = report.filter((r: any) => r && r.category === key)
-    const catPossible = cats.reduce((sum: number, r: any) => sum + (r?.avgImp || 0), 0);
-    const catEarned = cats.reduce((sum: number, r: any) => r?.isMatch ? sum + (r?.avgImp || 0) : sum, 0);
+    const cats       = report.filter((r: any) => r && r.category === key)
+    const catPossible = cats.reduce((sum: number, r: any) => sum + (r?.avgImp || 0), 0)
+    const catEarned   = cats.reduce((sum: number, r: any) => r?.isMatch ? sum + (r?.avgImp || 0) : sum, 0)
     return {
       ...group,
-      score: cats.length > 0 && catPossible > 0 ? Math.round((catEarned / catPossible) * 100) : null,
+      score:    cats.length > 0 && catPossible > 0 ? Math.round((catEarned / catPossible) * 100) : null,
       answered: cats.length,
     }
   })
@@ -209,19 +298,29 @@ export default function Results() {
     <main className="max-w-2xl mx-auto px-6 py-16">
       <Confetti active={showConfetti} />
 
+      {/* ── Header: both characters react to the score ── */}
       <motion.header className="text-center mb-12" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <CharAvatar character={myCharacter} size={84} animated={true} />
-          <span className="text-4xl">💌</span>
-          <CharAvatar character={partnerCharacter} size={84} animated={true} />
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={scoreReady ? `ready-${weightedScorePercent}` : 'waiting'}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <DuoReaction score={weightedScorePercent} ready={scoreReady} />
+          </motion.div>
+        </AnimatePresence>
         <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Compatibility Report</h1>
-        <p className="italic" style={{ color: 'var(--text-muted)' }}>You & {partnerName}</p>
+        <p className="italic" style={{ color: 'var(--text-muted)' }}>You &amp; {partnerName}</p>
       </motion.header>
 
-      {/* WAITING STATE BANNER */}
+      {/* ── Waiting banner ── */}
       {partnerAnsweredCount < totalScenarios && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-10 p-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+          className="mb-10 p-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg"
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
+        >
           <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
           <p className="text-sm font-bold tracking-wide" style={{ color: 'var(--text-main)' }}>
             Sync Active. Waiting for {partnerName} to complete {totalScenarios - partnerAnsweredCount} more scenarios.
@@ -229,11 +328,20 @@ export default function Results() {
         </motion.div>
       )}
 
+      {/* ── Score countdown + number ── */}
       {totalAnswered > 0 && (
-        <motion.div className="glass-card text-center mb-10 p-8" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}>
+        <motion.div
+          className="glass-card text-center mb-10 p-8"
+          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}
+        >
           <AnimatePresence mode="wait">
             {countdown !== null ? (
-              <motion.div key={`cd-${countdown}`} initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1.1, opacity: 1 }} exit={{ scale: 1.6, opacity: 0 }} transition={{ duration: 0.45 }} className="text-8xl font-bold py-6" style={{ color: 'var(--accent-base)' }}>
+              <motion.div
+                key={`cd-${countdown}`}
+                initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1.1, opacity: 1 }} exit={{ scale: 1.6, opacity: 0 }}
+                transition={{ duration: 0.45 }}
+                className="text-8xl font-bold py-6" style={{ color: 'var(--accent-base)' }}
+              >
                 {countdown}
               </motion.div>
             ) : (
@@ -251,9 +359,12 @@ export default function Results() {
         </motion.div>
       )}
 
-      {/* MIND READER CARDS */}
+      {/* ── Mind Reader cards ── */}
       {totalAnswered > 0 && (
-        <motion.div className="flex gap-4 mb-10" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+        <motion.div
+          className="flex gap-4 mb-10"
+          initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+        >
           <div className="flex-1 glass-card p-5 text-center">
             <div className="text-3xl mb-2">🔮</div>
             <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>You Predicted Her</p>
@@ -267,18 +378,30 @@ export default function Results() {
         </motion.div>
       )}
 
+      {/* ── Category breakdown ── */}
       {totalAnswered > 0 && (
-        <motion.div className="glass-card p-6 mb-10" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <motion.div
+          className="glass-card p-6 mb-10"
+          initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+        >
           <h2 className="font-bold text-xs uppercase tracking-widest mb-5" style={{ color: 'var(--text-muted)' }}>By Category</h2>
           <div className="space-y-4">
             {categoryScores.filter(c => c.answered > 0).map((cat, i) => (
               <div key={cat.label}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-main)' }}><span>{cat.emoji}</span> {cat.label}</span>
+                  <span className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                    <span>{cat.emoji}</span> {cat.label}
+                  </span>
                   <span className="text-sm font-bold" style={{ color: 'var(--accent-base)' }}>{cat.score}%</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-app)' }}>
-                  <motion.div className="h-full rounded-full" style={{ background: 'var(--accent-base)' }} initial={{ width: 0 }} animate={{ width: `${cat.score}%` }} transition={{ duration: 0.9, delay: 0.5 + i * 0.1, ease: 'easeOut' }} />
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: 'var(--accent-base)' }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${cat.score}%` }}
+                    transition={{ duration: 0.9, delay: 0.5 + i * 0.1, ease: 'easeOut' }}
+                  />
                 </div>
               </div>
             ))}
@@ -286,16 +409,21 @@ export default function Results() {
         </motion.div>
       )}
 
+      {/* ── Scenario breakdown cards ── */}
       <div className="space-y-6">
         {report.map((res: any, i: number) => (
-          <motion.div key={res.key} className="glass-card p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.04 }}>
+          <motion.div
+            key={res.key}
+            className="glass-card p-6"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.04 }}
+          >
             <div className="flex justify-between items-start mb-4 pb-3 border-b border-[var(--border-subtle)]">
               <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
                 <span>{res.emoji}</span> {res.name}
               </h2>
               <Link href={`/scenarios/${res.key}`} className="text-xs text-[var(--text-muted)] hover:text-white underline">Edit</Link>
             </div>
-            
+
             <div className="flex justify-between mb-4 gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -311,20 +439,37 @@ export default function Results() {
                   <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>{partnerName}</p>
                 </div>
                 {revealed[i] ? (
-                  <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}>
+                  <motion.p
+                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                    className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}
+                  >
                     {res.partnerAnswerText}
                   </motion.p>
                 ) : (
-                  <button onClick={() => setRevealed(p => ({ ...p, [i]: true }))} className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all border border-[var(--border-focus)] hover:bg-[var(--accent-base)] hover:text-black">
+                  <button
+                    onClick={() => setRevealed(p => ({ ...p, [i]: true }))}
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all border border-[var(--border-focus)] hover:bg-[var(--accent-base)] hover:text-black"
+                  >
                     🎉 Reveal
                   </button>
                 )}
               </div>
             </div>
+
+            {/* Both characters react simultaneously on reveal */}
             <AnimatePresence>
               {revealed[i] && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className={`p-3 rounded-xl text-sm font-semibold text-center ${res.isMatch ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                  {res.reaction}
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="flex gap-2 justify-center flex-wrap pt-1"
+                >
+                  <div className="reaction-bubble reaction-bubble-baymax">
+                    {characters.baymax.reactions[res.reactionKey as keyof typeof characters.baymax.reactions]}
+                  </div>
+                  <div className="reaction-bubble reaction-bubble-toothless">
+                    {characters.toothless.reactions[res.reactionKey as keyof typeof characters.toothless.reactions]}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -332,6 +477,7 @@ export default function Results() {
         ))}
       </div>
 
+      {/* ── Empty state ── */}
       {totalAnswered === 0 && (
         <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
           <div className="text-6xl mb-5">🤔</div>
@@ -343,17 +489,21 @@ export default function Results() {
         </div>
       )}
 
+      {/* ── Share card ── */}
       {totalAnswered > 0 && (
-        <motion.div className="mt-14 rounded-3xl overflow-hidden glass-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
+        <motion.div
+          className="mt-14 rounded-3xl overflow-hidden glass-card"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
+        >
           <div className="p-8 text-center bg-gradient-to-b from-transparent to-black/20">
             <p className="text-xs uppercase font-bold tracking-widest mb-5" style={{ color: 'var(--text-muted)' }}>Share Your Score</p>
-            <div className="flex items-center justify-center gap-4 mb-3">
-              <CharAvatar character={myCharacter} size={56} />
+            <div className="flex items-center justify-center gap-6 mb-3">
+              <Image src="/baymax.png" alt="Baymax" width={56} height={56} className="object-contain drop-shadow-xl" />
               <span className="text-3xl">💌</span>
-              <CharAvatar character={partnerCharacter} size={56} />
+              <Image src="/toothless.png" alt="Toothless" width={56} height={56} className="object-contain drop-shadow-xl" style={{ transform: 'scaleX(-1)' }} />
             </div>
             <div className="text-6xl font-bold mb-2" style={{ color: 'var(--accent-base)' }}>{weightedScorePercent}%</div>
-            <div className="text-xl font-bold mb-1" style={{ color: 'var(--text-main)' }}>You & {partnerName}</div>
+            <div className="text-xl font-bold mb-1" style={{ color: 'var(--text-main)' }}>You &amp; {partnerName}</div>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>jennypooh · Life Scenarios</p>
           </div>
         </motion.div>
