@@ -393,3 +393,14 @@ body[data-theme='dual'] .btn-blueprint {
   from { opacity: 0; transform: scale(0.5); }
   to   { opacity: 1; transform: scale(1); }
 }
+
+/* ─────────────────────────────────────────
+   BAYMAX SPRITE SHEET ANIMATION
+   Sheet: /public/baymax-walk-sheet.png
+   151 frames × 120px wide = 18120px total
+   15 fps → 10.07s per cycle
+───────────────────────────────────────── */
+@keyframes baymax-sprite {
+  from { background-position-x: 0; }
+  to   { background-position-x: -18120px; }
+}
