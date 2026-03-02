@@ -617,7 +617,7 @@ export default function Results() {
             The number doesn&apos;t matter as much as this does –
           </p>
           <p className="text-lg font-semibold" style={{ color: 'var(--text-main)' }}>
-            we showed up, answered honestly, and chose each other anyway.
+            I will always choose you.
           </p>
         </motion.div>
       )}
