@@ -73,18 +73,6 @@ export const scenarioData: Record<string, Scenario> = {
       { id: 'every-night', text: 'This is normal, we eat out all the time' }
     ]
   },
-  'holidays': {
-    name: 'Holiday Plans', emoji: '🦃',
-    situation: 'It is November. Both families are asking about Thanksgiving plans.',
-    question: 'Where are we spending the holidays?',
-    options: [
-      { id: 'rotation', text: 'We alternate families each year' },
-      { id: 'host', text: 'Everyone comes to our place' },
-      { id: 'marathon', text: 'Lunch with one family, dinner with the other' },
-      { id: 'travel', text: 'Book flights somewhere warm, skip family' },
-      { id: 'friends', text: 'Friendsgiving with our crew' }
-    ]
-  },
   'john-moonyoung': {
     name: 'John & Moonyoung', emoji: '👨‍👩‍👦',
     situation: 'John texts asking if we want to grab dinner this weekend.',
@@ -246,7 +234,7 @@ export const scenarioData: Record<string, Scenario> = {
 export const categoryGroups: Record<string, { label: string; emoji: string; ids: string[] }> = {
   money:     { label: 'Money',               emoji: '💰', ids: ['money-management', 'spending-limits', 'eating-out'] },
   lifestyle: { label: 'Lifestyle',           emoji: '🏡', ids: ['chores', 'cleanliness', 'morning-routine', 'night-routine', 'friday-night'] },
-  social:    { label: 'Social',              emoji: '🥂', ids: ['holidays', 'john-moonyoung', 'our-friends', 'opposite-sex'] },
+  social:    { label: 'Social',              emoji: '🥂', ids: ['john-moonyoung', 'our-friends', 'opposite-sex'] },
   family:    { label: 'Family',              emoji: '👨‍👩‍👧‍👦', ids: ['kids-planning', 'school-choice', 'bullying'] },
   conflict:  { label: 'Conflict & Decisions',emoji: '🤝', ids: ['decision-making', 'fighting'] }
 }
