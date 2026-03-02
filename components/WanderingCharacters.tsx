@@ -5,18 +5,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import BaymaxSprite from './BaymaxSprite'
 import SpriteSheet from './SpriteSheet'
 
-// ─── Timing constants ─────────────────────────────────────────
-const BAYMAX_INITIAL_DELAY: [number, number]      = [8, 15]
-const BAYMAX_INTERVAL: [number, number]            = [25, 50]
+// ─── Timing constants (tuned for noticeable presence) ────────
+const BAYMAX_INITIAL_DELAY: [number, number]      = [3, 7]
+const BAYMAX_INTERVAL: [number, number]            = [12, 25]
 const BAYMAX_CROSS_DURATION: [number, number]      = [18, 25]
 
-const TOOTHLESS_INITIAL_DELAY: [number, number]    = [15, 25]
-const TOOTHLESS_INTERVAL: [number, number]         = [30, 60]
+const TOOTHLESS_INITIAL_DELAY: [number, number]    = [5, 12]
+const TOOTHLESS_INTERVAL: [number, number]         = [15, 30]
 const TOOTHLESS_CROSS_DURATION: [number, number]   = [12, 18]
 
-const LIGHT_FURY_INITIAL_DELAY: [number, number]   = [20, 35]
-const LIGHT_FURY_INTERVAL: [number, number]        = [35, 65]
+const LIGHT_FURY_INITIAL_DELAY: [number, number]   = [8, 16]
+const LIGHT_FURY_INTERVAL: [number, number]        = [18, 35]
 const LIGHT_FURY_CROSS_DURATION: [number, number]  = [14, 22]
+
+const PEEK_INITIAL_DELAY: [number, number]         = [6, 14]
+const PEEK_INTERVAL: [number, number]              = [20, 40]
+const PEEK_HOLD_DURATION: [number, number]         = [2.5, 5]
 
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min)
@@ -39,11 +43,17 @@ const LIGHT_FURY_SPRITES = [
   { src: '/light-fury-4-sprite.png', frameCount: 68 },
 ]
 
+const FACE_SPRITES = [
+  { src: '/toothless-face-sprite.png',   frameCount: 8 },
+  { src: '/toothless-face-2-sprite.png', frameCount: 28 },
+  { src: '/toothless-face-3-sprite.png', frameCount: 20 },
+  { src: '/toothless-face-4-sprite.png', frameCount: 31 },
+]
+
 const SPRITE_FRAME_W = 384
 const SPRITE_FRAME_H = 216
 
 export default function WanderingCharacters() {
-  // Desktop-first: default false so desktop renders immediately
   const [isMobile, setIsMobile] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
 
@@ -69,6 +79,13 @@ export default function WanderingCharacters() {
   const lightFuryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lightFuryCross = useRef(rand(...LIGHT_FURY_CROSS_DURATION))
 
+  // ── Face peek state ──
+  const [peekActive, setPeekActive] = useState(false)
+  const [peekX, setPeekX] = useState(50)
+  const [peekSprite, setPeekSprite] = useState(FACE_SPRITES[0])
+  const [peekHold, setPeekHold] = useState(3)
+  const peekTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // ── Media queries ──
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -82,7 +99,8 @@ export default function WanderingCharacters() {
     return () => { mq.removeEventListener('change', onMobile); rmq.removeEventListener('change', onMotion) }
   }, [])
 
-  const disabled = isMobile || reducedMotion
+  // Reduced motion still disables; mobile now allowed
+  const disabled = reducedMotion
 
   // ── Schedule helpers ──
   const scheduleBaymax = useCallback((delay?: number) => {
@@ -119,18 +137,31 @@ export default function WanderingCharacters() {
     }, ms)
   }, [])
 
+  const schedulePeek = useCallback((delay?: number) => {
+    if (peekTimer.current) clearTimeout(peekTimer.current)
+    const ms = (delay ?? rand(...PEEK_INTERVAL)) * 1000
+    peekTimer.current = setTimeout(() => {
+      setPeekX(10 + Math.random() * 80) // 10%–90% from left
+      setPeekSprite(pick(FACE_SPRITES))
+      setPeekHold(rand(...PEEK_HOLD_DURATION))
+      setPeekActive(true)
+    }, ms)
+  }, [])
+
   // ── Kick off initial appearances ──
   useEffect(() => {
     if (disabled) return
     scheduleBaymax(rand(...BAYMAX_INITIAL_DELAY))
     scheduleToothless(rand(...TOOTHLESS_INITIAL_DELAY))
     scheduleLightFury(rand(...LIGHT_FURY_INITIAL_DELAY))
+    schedulePeek(rand(...PEEK_INITIAL_DELAY))
     return () => {
       if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
       if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
       if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
+      if (peekTimer.current) clearTimeout(peekTimer.current)
     }
-  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury])
+  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury, schedulePeek])
 
   // ── Pause when tab hidden, resume when visible ──
   useEffect(() => {
@@ -139,19 +170,21 @@ export default function WanderingCharacters() {
         setBaymaxActive(false)
         setToothlessActive(false)
         setLightFuryActive(false)
+        setPeekActive(false)
         if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
         if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
         if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
+        if (peekTimer.current) clearTimeout(peekTimer.current)
       } else if (!disabled) {
-        // Reschedule when tab becomes visible again
         scheduleBaymax(rand(...BAYMAX_INITIAL_DELAY))
         scheduleToothless(rand(...TOOTHLESS_INITIAL_DELAY))
         scheduleLightFury(rand(...LIGHT_FURY_INITIAL_DELAY))
+        schedulePeek(rand(...PEEK_INITIAL_DELAY))
       }
     }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
-  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury])
+  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury, schedulePeek])
 
   // ── Completion handlers ──
   const onBaymaxDone = useCallback(() => {
@@ -169,11 +202,18 @@ export default function WanderingCharacters() {
     if (!document.hidden) scheduleLightFury()
   }, [scheduleLightFury])
 
+  const onPeekDone = useCallback(() => {
+    setPeekActive(false)
+    if (!document.hidden) schedulePeek()
+  }, [schedulePeek])
+
   if (disabled) return null
 
-  const BAYMAX_SIZE = 70
-  const TOOTHLESS_SIZE = 64
-  const LIGHT_FURY_SIZE = 60
+  // Responsive sizes — smaller on mobile
+  const BAYMAX_SIZE     = isMobile ? 45 : 70
+  const TOOTHLESS_SIZE  = isMobile ? 40 : 64
+  const LIGHT_FURY_SIZE = isMobile ? 38 : 60
+  const PEEK_SIZE       = isMobile ? 44 : 64
 
   return (
     <div
@@ -195,7 +235,7 @@ export default function WanderingCharacters() {
             animate={{ x: baymaxDir === 'ltr' ? 'calc(100vw + 100px)' : -100 }}
             transition={{ duration: baymaxCross.current, ease: 'linear' }}
             onAnimationComplete={onBaymaxDone}
-            style={{ position: 'absolute', bottom: 8, opacity: 0.35 }}
+            style={{ position: 'absolute', bottom: 8, opacity: 0.45 }}
           >
             <BaymaxSprite
               size={BAYMAX_SIZE}
@@ -223,7 +263,7 @@ export default function WanderingCharacters() {
             style={{
               position: 'absolute',
               top: `${toothlessY}%`,
-              opacity: 0.3,
+              opacity: 0.4,
             }}
           >
             <SpriteSheet
@@ -257,7 +297,7 @@ export default function WanderingCharacters() {
             style={{
               position: 'absolute',
               top: `${lightFuryY}%`,
-              opacity: 0.28,
+              opacity: 0.38,
             }}
           >
             <SpriteSheet
@@ -268,6 +308,38 @@ export default function WanderingCharacters() {
               fps={12}
               size={LIGHT_FURY_SIZE}
               mirrored={lightFuryDir === 'rtl'}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── TOOTHLESS FACE PEEK: rises from bottom edge, holds, drops ── */}
+      <AnimatePresence>
+        {peekActive && (
+          <motion.div
+            key={`pk-${Date.now()}`}
+            initial={{ y: 80 }}
+            animate={{ y: [80, -10, -10, 80] }}
+            transition={{
+              duration: peekHold + 1.6,
+              times: [0, 0.2, 0.8, 1],
+              ease: 'easeInOut',
+            }}
+            onAnimationComplete={onPeekDone}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: `${peekX}%`,
+              opacity: 0.5,
+            }}
+          >
+            <SpriteSheet
+              src={peekSprite.src}
+              frameWidth={SPRITE_FRAME_W}
+              frameHeight={SPRITE_FRAME_H}
+              frameCount={peekSprite.frameCount}
+              fps={10}
+              size={PEEK_SIZE}
             />
           </motion.div>
         )}
