@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { scenarioData, categoryGroups } from '@/lib/data'
-import { CharacterDuo } from '@/components/CharacterDisplay'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase'
 
@@ -53,14 +52,6 @@ export default function Scenarios() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-14">
       <motion.header className="text-center mb-10" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Both characters always visible in the hub header */}
-        <div className="flex justify-center mb-6">
-          <CharacterDuo
-            baymaxVariant="gif"
-            toothlessVariant="gif"
-            size={88}
-          />
-        </div>
         <h1 className="text-5xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Life Scenarios</h1>
         <p className="text-xl italic" style={{ color: 'var(--text-muted)' }}>How would you handle these situations?</p>
       </motion.header>

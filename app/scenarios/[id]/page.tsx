@@ -5,20 +5,12 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scenarioData } from '@/lib/data'
-import { CharacterDuo } from '@/components/CharacterDisplay'
 
 // 🚀 FIREBASE IMPORTS
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '@/firebase'
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
-
-// Per-phase duo variant config — both characters always present, expression shifts with context
-const PHASE_VARIANTS: Record<string, { baymax: any; toothless: any }> = {
-  mine:   { baymax: 'dance',  toothless: 'fly'    }, // energetic, ready
-  guess:  { baymax: 'static', toothless: 'gif'    }, // Baymax thinking, Toothless curious
-  stakes: { baymax: 'wave',   toothless: 'static' }, // calm, deliberate
-}
 
 export default function ScenarioPage() {
   const { id } = useParams()
@@ -108,8 +100,6 @@ export default function ScenarioPage() {
     </div>
   )
 
-  const duoVariants = PHASE_VARIANTS[step]
-
   return (
     <main className="max-w-2xl mx-auto px-6 py-16">
       <AnimatePresence>
@@ -131,24 +121,6 @@ export default function ScenarioPage() {
       </AnimatePresence>
 
       <motion.header className="mb-10 text-center" initial={{ opacity: 0, y: -15 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Both characters always present — variant swaps per phase with crossfade */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, scale: 0.88, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -6 }}
-            transition={{ duration: 0.32, ease: 'easeOut' }}
-            className="flex justify-center mb-4"
-          >
-            <CharacterDuo
-              baymaxVariant={duoVariants.baymax}
-              toothlessVariant={duoVariants.toothless}
-              size={80}
-            />
-          </motion.div>
-        </AnimatePresence>
-
         <h1 className="text-3xl md:text-4xl font-bold mb-5 flex items-center justify-center gap-3" style={{ color: 'var(--text-main)' }}>
           <span>{scenario.emoji}</span> {scenario.name}
         </h1>
