@@ -170,9 +170,17 @@ export default function Results() {
 
   const [showConfetti, setShowConfetti] = useState(false)
   const [revealed, setRevealed]         = useState<Record<number, boolean>>({})
+  const [cascading, setCascading]       = useState(false)
   const [scoreReady, setScoreReady]     = useState(false)
   const [countdown, setCountdown]       = useState<number | null>(null)
   const confettiFired = useRef(false)
+  const cascadeTimer  = useRef<NodeJS.Timeout | null>(null)
+
+  const triggerHaptic = () => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50)
+    }
+  }
 
   useEffect(() => {
     const myChar = localStorage.getItem('myCharacter') || 'baymax'
@@ -380,7 +388,16 @@ export default function Results() {
       )}
 
       {/* ── Mind Reader cards ── */}
-      {totalAnswered > 0 && (
+      {totalAnswered > 0 && (() => {
+        const guessLabel = (correct: number, total: number) => {
+          if (total === 0) return ''
+          const pct = correct / total
+          if (pct >= 0.7) return 'Mind reader!'
+          if (pct >= 0.5) return 'Pretty intuitive'
+          if (pct >= 0.3) return 'Getting there'
+          return 'Mysterious to each other'
+        }
+        return (
         <motion.div
           className="flex gap-4 mb-10"
           initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
@@ -391,6 +408,9 @@ export default function Results() {
               {myName} → {partnerName}
             </p>
             <p className="text-2xl font-bold text-purple-400">{myCorrectGuesses} / {totalAnswered}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider mt-1.5" style={{ color: myCorrectGuesses / totalAnswered >= 0.5 ? 'var(--accent-sage)' : 'var(--text-muted)' }}>
+              {guessLabel(myCorrectGuesses, totalAnswered)}
+            </p>
           </div>
           <div className="flex-1 glass-card p-5 text-center">
             <div className="text-3xl mb-2">🧠</div>
@@ -398,9 +418,13 @@ export default function Results() {
               {partnerName} → {myName}
             </p>
             <p className="text-2xl font-bold text-purple-400">{partnerCorrectGuesses} / {totalAnswered}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider mt-1.5" style={{ color: partnerCorrectGuesses / totalAnswered >= 0.5 ? 'var(--accent-sage)' : 'var(--text-muted)' }}>
+              {guessLabel(partnerCorrectGuesses, totalAnswered)}
+            </p>
           </div>
         </motion.div>
-      )}
+        )
+      })()}
 
       {/* ── Category breakdown ── */}
       {totalAnswered > 0 && (
@@ -416,12 +440,19 @@ export default function Results() {
                   <span className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
                     <span>{cat.emoji}</span> {cat.label}
                   </span>
-                  <span className="text-sm font-bold" style={{ color: 'var(--accent-base)' }}>{cat.score}%</span>
+                  <div className="flex items-center gap-2">
+                    {cat.score !== null && cat.score < 40 && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: 'rgba(255, 179, 71, 0.2)', color: '#FFB347' }}>
+                        Worth discussing
+                      </span>
+                    )}
+                    <span className="text-sm font-bold" style={{ color: cat.score !== null && cat.score < 40 ? '#FFB347' : 'var(--accent-base)' }}>{cat.score}%</span>
+                  </div>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-app)' }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: 'var(--accent-base)' }}
+                    style={{ background: cat.score !== null && cat.score < 40 ? '#FFB347' : 'var(--accent-base)' }}
                     initial={{ width: 0 }}
                     animate={{ width: `${cat.score}%` }}
                     transition={{ duration: 0.9, delay: 0.5 + i * 0.1, ease: 'easeOut' }}
@@ -433,7 +464,41 @@ export default function Results() {
         </motion.div>
       )}
 
-      {/* ── Scenario breakdown cards ── */}
+      {/* ── Cascade reveal button ── */}
+      {totalAnswered > 0 && Object.keys(revealed).length < report.length && (
+        <motion.div className="flex justify-end mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <button
+            onClick={() => {
+              if (cascading) return
+              triggerHaptic()
+              setCascading(true)
+              let idx = 0
+              const revealNext = () => {
+                // Skip already-revealed cards
+                while (idx < report.length && revealed[idx]) idx++
+                if (idx >= report.length) {
+                  setCascading(false)
+                  return
+                }
+                setRevealed(prev => ({ ...prev, [idx]: true }))
+                triggerHaptic()
+                idx++
+                if (idx < report.length) {
+                  cascadeTimer.current = setTimeout(revealNext, 600)
+                } else {
+                  setCascading(false)
+                }
+              }
+              revealNext()
+            }}
+            disabled={cascading}
+            className="text-xs font-bold px-4 py-2 rounded-lg transition-all border border-[var(--border-focus)] hover:bg-[var(--accent-base)] hover:text-black"
+            style={{ color: 'var(--text-muted)', opacity: cascading ? 0.5 : 1 }}
+          >
+            {cascading ? 'Revealing...' : 'Reveal One by One'}
+          </button>
+        </motion.div>
+      )}
       <div className="space-y-6">
         {report.map((res: any, i: number) => {
           const matchBadge = res.matchLevel === 'exact'
@@ -472,7 +537,10 @@ export default function Results() {
                 </div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}>{res.myAnswerText}</p>
                 {res.my2ndText && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>2nd: {res.my2ndText}</p>
+                  <p className="text-xs mt-1.5 flex items-center gap-1.5">
+                    <span className="inline-block w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(182, 138, 255, 0.5)', color: '#fff', lineHeight: '16px', textAlign: 'center' }}>2</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{res.my2ndText}</span>
+                  </p>
                 )}
                 {res.correctGuess && <p className="text-xs font-bold text-purple-400 mt-2">🔮 Guessed Correctly</p>}
               </div>
@@ -485,12 +553,15 @@ export default function Results() {
                   <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                     <p className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}>{res.partnerAnswerText}</p>
                     {res.partner2ndText && (
-                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>2nd: {res.partner2ndText}</p>
+                      <p className="text-xs mt-1.5 flex items-center gap-1.5">
+                        <span className="inline-block w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(182, 138, 255, 0.5)', color: '#fff', lineHeight: '16px', textAlign: 'center' }}>2</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{res.partner2ndText}</span>
+                      </p>
                     )}
                   </motion.div>
                 ) : (
                   <button
-                    onClick={() => setRevealed(p => ({ ...p, [i]: true }))}
+                    onClick={() => { triggerHaptic(); setRevealed(p => ({ ...p, [i]: true })) }}
                     className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all border border-[var(--border-focus)] hover:bg-[var(--accent-base)] hover:text-black"
                   >
                     🎉 Reveal

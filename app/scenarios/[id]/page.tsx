@@ -247,18 +247,49 @@ export default function ScenarioPage() {
 
         {step === 'stakes' && (
           <motion.div key="stakes" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-12 text-center py-6">
-            <input
-              type="range" min="1" max="5"
-              value={importance}
-              onChange={(e) => { setImportance(Number(e.target.value)); triggerHaptic() }}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer mb-6"
-              style={{ background: 'var(--border)' }}
-            />
-            <div className="flex justify-between text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-              <span style={importance <= 2 ? { color: 'var(--text-main)' } : {}}>Meh 🤷‍♂️</span>
-              <span style={importance === 3 ? { color: 'var(--text-main)' } : {}}>Important 🤔</span>
-              <span style={importance >= 4 ? { color: '#FF6B6B' } : {}}>Dealbreaker 🛑</span>
+            {/* Dot selector */}
+            <div className="flex justify-center gap-4 mb-6">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => { setImportance(level); triggerHaptic() }}
+                  className="flex flex-col items-center gap-2 transition-all duration-200"
+                >
+                  <motion.div
+                    animate={{
+                      scale: importance === level ? 1.3 : 1,
+                      opacity: importance >= level ? 1 : 0.3,
+                    }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors duration-200"
+                    style={{
+                      background: importance === level
+                        ? (level >= 4 ? '#FF6B6B' : 'var(--accent-sage)')
+                        : importance >= level
+                        ? (level >= 4 ? 'rgba(255, 107, 107, 0.4)' : 'rgba(138, 188, 139, 0.4)')
+                        : 'rgba(128,128,128,0.15)',
+                      color: importance >= level ? '#fff' : 'var(--text-muted)',
+                      boxShadow: importance === level ? `0 0 12px ${level >= 4 ? 'rgba(255, 107, 107, 0.5)' : 'rgba(138, 188, 139, 0.5)'}` : 'none',
+                    }}
+                  >
+                    {level}
+                  </motion.div>
+                </button>
+              ))}
             </div>
+            {/* Label */}
+            <motion.p
+              key={importance}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm font-bold uppercase tracking-wider"
+              style={{ color: importance >= 4 ? '#FF6B6B' : importance >= 3 ? 'var(--text-main)' : 'var(--text-muted)' }}
+            >
+              {importance <= 1 ? 'Not a big deal 🤷‍♂️'
+                : importance === 2 ? 'Slightly matters 🤷‍♂️'
+                : importance === 3 ? 'Important 🤔'
+                : importance === 4 ? 'Very important 🔥'
+                : 'Dealbreaker 🛑'}
+            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>

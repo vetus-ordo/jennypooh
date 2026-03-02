@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { scenarioData, categoryGroups } from '@/lib/data'
+import CharacterDisplay from '@/components/CharacterDisplay'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase'
 
@@ -148,16 +149,43 @@ export default function Scenarios() {
       })}
 
       <motion.div className="mt-4 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-        {partnerName && partnerAnswered < total && (
-          <p className="text-sm mb-3 font-semibold" style={{ color: 'var(--text-muted)' }}>
-            {partnerAnswered === 0
-              ? `Waiting for ${partnerName} to start...`
-              : `${partnerName} has completed ${partnerAnswered}/${total} scenarios`} 🐾
-          </p>
-        )}
-        <Link href="/results" className="btn-blueprint inline-block text-lg px-10 py-4">
-          View Compatibility Report 💌
-        </Link>
+        <AnimatePresence mode="wait">
+          {completed === total && partnerAnswered === total ? (
+            <motion.div
+              key="both-done"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="glass-card p-8 mb-6"
+            >
+              <div className="flex items-center justify-center gap-6 mb-4">
+                <CharacterDisplay character="baymax" variant="heart" size={56} floatLoop floatDelay={0} />
+                <CharacterDisplay character="toothless" variant="lick" size={56} floatLoop floatDelay={1.5} mirrored />
+              </div>
+              <p className="text-lg font-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                Both players are done
+              </p>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+                Time to see how well you two know each other.
+              </p>
+              <Link href="/results" className="btn-primary inline-block text-lg px-10 py-4">
+                See Your Results
+              </Link>
+            </motion.div>
+          ) : (
+            <motion.div key="in-progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {partnerName && partnerAnswered < total && (
+                <p className="text-sm mb-3 font-semibold" style={{ color: 'var(--text-muted)' }}>
+                  {partnerAnswered === 0
+                    ? `Waiting for ${partnerName} to start...`
+                    : `${partnerName} has completed ${partnerAnswered}/${total} scenarios`}
+                </p>
+              )}
+              <Link href="/results" className="btn-blueprint inline-block text-lg px-10 py-4">
+                View Compatibility Report 💌
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </main>
   )
