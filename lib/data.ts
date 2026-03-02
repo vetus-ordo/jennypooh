@@ -99,7 +99,7 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'our-friends': {
     name: 'Friend Groups', emoji: '🥂',
-    situation: 'We each have our own friend groups — yours from college, hers from work. Nobody knows each other yet.',
+    situation: 'We each have our own friend groups that have never met.',
     question: 'What is the plan?',
     options: [
       { id: 'merge', text: 'Throw a big party, merge everyone' },
@@ -109,16 +109,16 @@ export const scenarioData: Record<string, Scenario> = {
       { id: 'whoever', text: 'No plan, whoever gets along gets along' }
     ]
   },
-  'house-type': {
-    name: 'Home Search', emoji: '🏠',
-    situation: 'We are apartment hunting together for the first time.',
-    question: 'What are we looking for?',
+  'chores': {
+    name: 'Chore Duty', emoji: '🐕',
+    situation: 'We come home and the dog just peed all over the living room rug.',
+    question: 'What happens?',
     options: [
-      { id: 'one-bed', text: 'Cozy 1-bedroom, we do not need much space' },
-      { id: 'two-bed', text: '2-bedroom for an office or guest room' },
-      { id: 'small-house', text: 'Small house with a yard' },
-      { id: 'big-house', text: 'Bigger house with room to grow' },
-      { id: 'condo', text: 'Condo or townhouse' }
+      { id: 'first-sees', text: 'Whoever sees it first handles it' },
+      { id: 'take-turns', text: 'We take turns — it is only fair' },
+      { id: 'team-effort', text: 'Grab paper towels together, team effort' },
+      { id: 'rock-paper', text: 'Rock paper scissors, loser cleans' },
+      { id: 'pretend', text: 'Pretend we did not see it' }
     ]
   },
   'cleanliness': {
@@ -204,12 +204,49 @@ export const scenarioData: Record<string, Scenario> = {
       { id: 'group-better', text: 'Could we make it a group thing?' },
       { id: 'uncomfortable', text: 'I would prefer you did not' }
     ]
+  },
+  'kids-planning': {
+    name: 'Future Family', emoji: '👶',
+    situation: 'We are up late one night talking about our future.',
+    question: 'How many kids do we want?',
+    options: [
+      { id: 'one', text: 'One and done' },
+      { id: 'two', text: 'Two — one of each ideally' },
+      { id: 'three-plus', text: 'Three or more, big family energy' },
+      { id: 'not-sure', text: 'Not sure yet, we will revisit later' },
+      { id: 'none', text: 'No kids — we are the fun aunt and uncle' }
+    ]
+  },
+  'school-choice': {
+    name: 'School Decision', emoji: '🎒',
+    situation: 'Our oldest just turned 5. Time to figure out school.',
+    question: 'Where are we sending them?',
+    options: [
+      { id: 'public', text: 'Public school — we turned out fine' },
+      { id: 'private', text: 'Private school, worth the investment' },
+      { id: 'montessori', text: 'Montessori or something alternative' },
+      { id: 'homeschool', text: 'Homeschool so we control the curriculum' },
+      { id: 'best-rated', text: 'Whatever is closest with the best reviews' }
+    ]
+  },
+  'bullying': {
+    name: 'School Trouble', emoji: '😤',
+    situation: 'Our kid comes home upset — someone at school has been picking on them.',
+    question: 'What do we do?',
+    options: [
+      { id: 'go-to-school', text: 'Go to the school and handle it ourselves' },
+      { id: 'call-parents', text: 'One of us calls the other parents directly' },
+      { id: 'taekwondo', text: 'Enroll them in taekwondo — build confidence' },
+      { id: 'coach-kid', text: 'Talk to our kid first, coach them through it' },
+      { id: 'let-school', text: 'Email the teacher and let the school handle it' }
+    ]
   }
 }
 
 export const categoryGroups: Record<string, { label: string; emoji: string; ids: string[] }> = {
   money:     { label: 'Money',               emoji: '💰', ids: ['money-management', 'spending-limits', 'eating-out'] },
-  lifestyle: { label: 'Lifestyle',           emoji: '🏡', ids: ['house-type', 'cleanliness', 'morning-routine', 'night-routine', 'friday-night'] },
+  lifestyle: { label: 'Lifestyle',           emoji: '🏡', ids: ['chores', 'cleanliness', 'morning-routine', 'night-routine', 'friday-night'] },
   social:    { label: 'Social',              emoji: '🥂', ids: ['holidays', 'john-moonyoung', 'our-friends', 'opposite-sex'] },
+  family:    { label: 'Family',              emoji: '👨‍👩‍👧‍👦', ids: ['kids-planning', 'school-choice', 'bullying'] },
   conflict:  { label: 'Conflict & Decisions',emoji: '🤝', ids: ['decision-making', 'fighting'] }
 }
