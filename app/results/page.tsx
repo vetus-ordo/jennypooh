@@ -170,9 +170,11 @@ export default function Results() {
 
   const [showConfetti, setShowConfetti] = useState(false)
   const [revealed, setRevealed]         = useState<Record<number, boolean>>({})
+  const [cascading, setCascading]       = useState(false)
   const [scoreReady, setScoreReady]     = useState(false)
   const [countdown, setCountdown]       = useState<number | null>(null)
   const confettiFired = useRef(false)
+  const cascadeTimer  = useRef<NodeJS.Timeout | null>(null)
 
   const triggerHaptic = () => {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
@@ -462,20 +464,38 @@ export default function Results() {
         </motion.div>
       )}
 
-      {/* ── Reveal All + Scenario breakdown cards ── */}
+      {/* ── Cascade reveal button ── */}
       {totalAnswered > 0 && Object.keys(revealed).length < report.length && (
         <motion.div className="flex justify-end mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
           <button
             onClick={() => {
+              if (cascading) return
               triggerHaptic()
-              const all: Record<number, boolean> = {}
-              report.forEach((_: any, idx: number) => { all[idx] = true })
-              setRevealed(all)
+              setCascading(true)
+              let idx = 0
+              const revealNext = () => {
+                // Skip already-revealed cards
+                while (idx < report.length && revealed[idx]) idx++
+                if (idx >= report.length) {
+                  setCascading(false)
+                  return
+                }
+                setRevealed(prev => ({ ...prev, [idx]: true }))
+                triggerHaptic()
+                idx++
+                if (idx < report.length) {
+                  cascadeTimer.current = setTimeout(revealNext, 600)
+                } else {
+                  setCascading(false)
+                }
+              }
+              revealNext()
             }}
+            disabled={cascading}
             className="text-xs font-bold px-4 py-2 rounded-lg transition-all border border-[var(--border-focus)] hover:bg-[var(--accent-base)] hover:text-black"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: 'var(--text-muted)', opacity: cascading ? 0.5 : 1 }}
           >
-            Reveal All 🎉
+            {cascading ? 'Revealing...' : 'Reveal One by One'}
           </button>
         </motion.div>
       )}
