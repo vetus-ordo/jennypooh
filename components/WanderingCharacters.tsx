@@ -5,22 +5,26 @@ import { motion, AnimatePresence } from 'framer-motion'
 import BaymaxSprite from './BaymaxSprite'
 import SpriteSheet from './SpriteSheet'
 
-// ─── Timing constants (tuned for noticeable presence) ────────
-const BAYMAX_INITIAL_DELAY: [number, number]      = [3, 7]
-const BAYMAX_INTERVAL: [number, number]            = [12, 25]
+// ─── Timing constants (generous frequency — don't be sparing) ────────
+const BAYMAX_INITIAL_DELAY: [number, number]      = [2, 5]
+const BAYMAX_INTERVAL: [number, number]            = [8, 18]
 const BAYMAX_CROSS_DURATION: [number, number]      = [18, 25]
 
-const TOOTHLESS_INITIAL_DELAY: [number, number]    = [5, 12]
-const TOOTHLESS_INTERVAL: [number, number]         = [15, 30]
+const TOOTHLESS_INITIAL_DELAY: [number, number]    = [3, 8]
+const TOOTHLESS_INTERVAL: [number, number]         = [10, 22]
 const TOOTHLESS_CROSS_DURATION: [number, number]   = [12, 18]
 
-const LIGHT_FURY_INITIAL_DELAY: [number, number]   = [8, 16]
-const LIGHT_FURY_INTERVAL: [number, number]        = [18, 35]
+const LIGHT_FURY_INITIAL_DELAY: [number, number]   = [5, 10]
+const LIGHT_FURY_INTERVAL: [number, number]        = [12, 25]
 const LIGHT_FURY_CROSS_DURATION: [number, number]  = [14, 22]
 
-const PEEK_INITIAL_DELAY: [number, number]         = [6, 14]
-const PEEK_INTERVAL: [number, number]              = [20, 40]
+const PEEK_INITIAL_DELAY: [number, number]         = [4, 10]
+const PEEK_INTERVAL: [number, number]              = [14, 28]
 const PEEK_HOLD_DURATION: [number, number]         = [2.5, 5]
+
+const COMPANION_INITIAL_DELAY: [number, number]    = [10, 18]
+const COMPANION_INTERVAL: [number, number]         = [16, 30]
+const COMPANION_CROSS_DURATION: [number, number]   = [10, 16]
 
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min)
@@ -49,6 +53,9 @@ const FACE_SPRITES = [
   { src: '/toothless-face-3-sprite.png', frameCount: 20 },
   { src: '/toothless-face-4-sprite.png', frameCount: 31 },
 ]
+
+// Combined pool for the companion flyer — any dragon can appear
+const ALL_FLYING_SPRITES = [...TOOTHLESS_SPRITES, ...LIGHT_FURY_SPRITES]
 
 const SPRITE_FRAME_W = 384
 const SPRITE_FRAME_H = 216
@@ -85,6 +92,14 @@ export default function WanderingCharacters() {
   const [peekSprite, setPeekSprite] = useState(FACE_SPRITES[0])
   const [peekHold, setPeekHold] = useState(3)
   const peekTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ── Companion flyer state ──
+  const [companionActive, setCompanionActive] = useState(false)
+  const [companionDir, setCompanionDir] = useState<'ltr' | 'rtl'>('rtl')
+  const [companionY, setCompanionY] = useState(30)
+  const [companionSprite, setCompanionSprite] = useState(ALL_FLYING_SPRITES[0])
+  const companionTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const companionCross = useRef(rand(...COMPANION_CROSS_DURATION))
 
   // ── Media queries ──
   useEffect(() => {
@@ -148,6 +163,18 @@ export default function WanderingCharacters() {
     }, ms)
   }, [])
 
+  const scheduleCompanion = useCallback((delay?: number) => {
+    if (companionTimer.current) clearTimeout(companionTimer.current)
+    const ms = (delay ?? rand(...COMPANION_INTERVAL)) * 1000
+    companionTimer.current = setTimeout(() => {
+      setCompanionDir(Math.random() > 0.5 ? 'ltr' : 'rtl')
+      setCompanionY(5 + Math.random() * 30)
+      setCompanionSprite(pick(ALL_FLYING_SPRITES))
+      companionCross.current = rand(...COMPANION_CROSS_DURATION)
+      setCompanionActive(true)
+    }, ms)
+  }, [])
+
   // ── Kick off initial appearances ──
   useEffect(() => {
     if (disabled) return
@@ -155,13 +182,15 @@ export default function WanderingCharacters() {
     scheduleToothless(rand(...TOOTHLESS_INITIAL_DELAY))
     scheduleLightFury(rand(...LIGHT_FURY_INITIAL_DELAY))
     schedulePeek(rand(...PEEK_INITIAL_DELAY))
+    scheduleCompanion(rand(...COMPANION_INITIAL_DELAY))
     return () => {
       if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
       if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
       if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
       if (peekTimer.current) clearTimeout(peekTimer.current)
+      if (companionTimer.current) clearTimeout(companionTimer.current)
     }
-  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury, schedulePeek])
+  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury, schedulePeek, scheduleCompanion])
 
   // ── Pause when tab hidden, resume when visible ──
   useEffect(() => {
@@ -171,20 +200,23 @@ export default function WanderingCharacters() {
         setToothlessActive(false)
         setLightFuryActive(false)
         setPeekActive(false)
+        setCompanionActive(false)
         if (baymaxTimer.current) clearTimeout(baymaxTimer.current)
         if (toothlessTimer.current) clearTimeout(toothlessTimer.current)
         if (lightFuryTimer.current) clearTimeout(lightFuryTimer.current)
         if (peekTimer.current) clearTimeout(peekTimer.current)
+        if (companionTimer.current) clearTimeout(companionTimer.current)
       } else if (!disabled) {
         scheduleBaymax(rand(...BAYMAX_INITIAL_DELAY))
         scheduleToothless(rand(...TOOTHLESS_INITIAL_DELAY))
         scheduleLightFury(rand(...LIGHT_FURY_INITIAL_DELAY))
         schedulePeek(rand(...PEEK_INITIAL_DELAY))
+        scheduleCompanion(rand(...COMPANION_INITIAL_DELAY))
       }
     }
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
-  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury, schedulePeek])
+  }, [disabled, scheduleBaymax, scheduleToothless, scheduleLightFury, schedulePeek, scheduleCompanion])
 
   // ── Completion handlers ──
   const onBaymaxDone = useCallback(() => {
@@ -207,6 +239,11 @@ export default function WanderingCharacters() {
     if (!document.hidden) schedulePeek()
   }, [schedulePeek])
 
+  const onCompanionDone = useCallback(() => {
+    setCompanionActive(false)
+    if (!document.hidden) scheduleCompanion()
+  }, [scheduleCompanion])
+
   if (disabled) return null
 
   // Responsive sizes — 3× original, smaller on mobile
@@ -214,6 +251,7 @@ export default function WanderingCharacters() {
   const TOOTHLESS_SIZE  = isMobile ? 120 : 192
   const LIGHT_FURY_SIZE = isMobile ? 114 : 180
   const PEEK_SIZE       = isMobile ? 132 : 192
+  const COMPANION_SIZE  = isMobile ? 100 : 160
 
   return (
     <div
@@ -308,6 +346,40 @@ export default function WanderingCharacters() {
               fps={12}
               size={LIGHT_FURY_SIZE}
               mirrored={lightFuryDir === 'rtl'}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── COMPANION: extra flyer (any dragon) for lively skies ── */}
+      <AnimatePresence>
+        {companionActive && (
+          <motion.div
+            key={`cp-${Date.now()}`}
+            initial={{ x: companionDir === 'ltr' ? -80 : 'calc(100vw + 80px)' }}
+            animate={{
+              x: companionDir === 'ltr' ? 'calc(100vw + 80px)' : -80,
+              y: [0, -10, 5, -8, 0],
+            }}
+            transition={{
+              x: { duration: companionCross.current, ease: 'linear' },
+              y: { duration: 3.5, repeat: Infinity, ease: 'easeInOut' },
+            }}
+            onAnimationComplete={onCompanionDone}
+            style={{
+              position: 'absolute',
+              top: `${companionY}%`,
+              opacity: 0.32,
+            }}
+          >
+            <SpriteSheet
+              src={companionSprite.src}
+              frameWidth={SPRITE_FRAME_W}
+              frameHeight={SPRITE_FRAME_H}
+              frameCount={companionSprite.frameCount}
+              fps={13}
+              size={COMPANION_SIZE}
+              mirrored={companionDir === 'ltr'}
             />
           </motion.div>
         )}
