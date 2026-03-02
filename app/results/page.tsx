@@ -210,6 +210,8 @@ export default function Results() {
 
   type ReactionKey = 'perfect' | 'good' | 'mismatch' | 'hilarious'
 
+  type MatchLevel = 'exact' | 'cross' | 'backup' | 'none'
+
   const report = Object.entries(scenarioData).map(([key, scenario]) => {
     const myAns = myData[key]
     const pAns  = partnerData[key]
@@ -217,9 +219,23 @@ export default function Results() {
 
     const myIdx      = scenario.options.findIndex(o => o.id === myAns.myAnswer)
     const partnerIdx = scenario.options.findIndex(o => o.id === pAns.myAnswer)
-    const isMatch    = myAns.myAnswer === pAns.myAnswer
 
-    if (isMatch) matches++
+    // ─── Tiered matching ──────────────────────────────────────
+    const isExactMatch = myAns.myAnswer === pAns.myAnswer
+    const isCrossMatch = !isExactMatch && (
+      (myAns.myAnswer === pAns.mySecondChoice) ||
+      (myAns.mySecondChoice === pAns.myAnswer)
+    )
+    const isBackupMatch = !isExactMatch && !isCrossMatch &&
+      myAns.mySecondChoice && pAns.mySecondChoice &&
+      myAns.mySecondChoice === pAns.mySecondChoice
+
+    const matchLevel: MatchLevel = isExactMatch ? 'exact'
+      : isCrossMatch ? 'cross'
+      : isBackupMatch ? 'backup'
+      : 'none'
+
+    if (isExactMatch) matches++
 
     const correctGuess = myAns.guessedPartnerAnswer === pAns.myAnswer
     if (correctGuess) myCorrectGuesses++
@@ -230,20 +246,28 @@ export default function Results() {
     const avgImp  = (myImp + pImp) / 2
 
     totalPossiblePoints += avgImp
-    if (isMatch) totalEarnedPoints += avgImp
+    if (isExactMatch)       totalEarnedPoints += avgImp
+    else if (isCrossMatch)  totalEarnedPoints += avgImp * 0.5
+    else if (isBackupMatch) totalEarnedPoints += avgImp * 0.25
+
+    // 2nd choice text for display
+    const my2ndIdx      = myAns.mySecondChoice ? scenario.options.findIndex(o => o.id === myAns.mySecondChoice) : -1
+    const partner2ndIdx = pAns.mySecondChoice  ? scenario.options.findIndex(o => o.id === pAns.mySecondChoice)  : -1
 
     const bothLast = myIdx === scenario.options.length - 1 && partnerIdx === scenario.options.length - 1
     const reactionKey: ReactionKey =
       bothLast ? 'hilarious'
-      : isMatch ? 'perfect'
-      : Math.abs(myIdx - partnerIdx) <= 1 ? 'good'
+      : isExactMatch ? 'perfect'
+      : (isCrossMatch || isBackupMatch) ? 'good'
       : 'mismatch'
 
     return {
       key, name: scenario.name, emoji: scenario.emoji, avgImp,
-      myAnswerText:      scenario.options[myIdx]?.text,
-      partnerAnswerText: scenario.options[partnerIdx]?.text,
-      isMatch, correctGuess, reactionKey,
+      myAnswerText:         scenario.options[myIdx]?.text,
+      partnerAnswerText:    scenario.options[partnerIdx]?.text,
+      my2ndText:            my2ndIdx >= 0 ? scenario.options[my2ndIdx]?.text : null,
+      partner2ndText:       partner2ndIdx >= 0 ? scenario.options[partner2ndIdx]?.text : null,
+      isMatch: isExactMatch, matchLevel, correctGuess, reactionKey,
       category: Object.entries(categoryGroups).find(([, g]) => g.ids.includes(key))?.[0] ?? 'other',
     }
   }).filter(Boolean)
@@ -278,7 +302,11 @@ export default function Results() {
   const categoryScores = Object.entries(categoryGroups).map(([key, group]) => {
     const cats        = report.filter((r: any) => r && r.category === key)
     const catPossible = cats.reduce((sum: number, r: any) => sum + (r?.avgImp || 0), 0)
-    const catEarned   = cats.reduce((sum: number, r: any) => r?.isMatch ? sum + (r?.avgImp || 0) : sum, 0)
+    const catEarned   = cats.reduce((sum: number, r: any) => {
+      if (!r) return sum
+      const w = r.matchLevel === 'exact' ? 1 : r.matchLevel === 'cross' ? 0.5 : r.matchLevel === 'backup' ? 0.25 : 0
+      return sum + (r.avgImp || 0) * w
+    }, 0)
     return {
       ...group,
       score:    cats.length > 0 && catPossible > 0 ? Math.round((catEarned / catPossible) * 100) : null,
@@ -343,7 +371,7 @@ export default function Results() {
                 </div>
                 <ScoreTierBanner score={weightedScorePercent} />
                 <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {matches} matches • Weighted by Importance
+                  {matches} perfect {matches === 1 ? 'match' : 'matches'} • {report.filter((r: any) => r?.matchLevel === 'cross' || r?.matchLevel === 'backup').length} partial • Weighted by Importance
                 </p>
               </motion.div>
             )}
@@ -407,7 +435,16 @@ export default function Results() {
 
       {/* ── Scenario breakdown cards ── */}
       <div className="space-y-6">
-        {report.map((res: any, i: number) => (
+        {report.map((res: any, i: number) => {
+          const matchBadge = res.matchLevel === 'exact'
+            ? { label: 'Perfect Match', color: 'var(--accent-sage)' }
+            : res.matchLevel === 'cross'
+            ? { label: 'Partial Match', color: '#B68AFF' }
+            : res.matchLevel === 'backup'
+            ? { label: 'Backup Match', color: '#FFB347' }
+            : { label: 'Mismatch', color: 'var(--text-muted)' }
+
+          return (
           <motion.div
             key={res.key}
             className="glass-card p-6"
@@ -417,7 +454,14 @@ export default function Results() {
               <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
                 <span>{res.emoji}</span> {res.name}
               </h2>
-              <Link href={`/scenarios/${res.key}`} className="text-xs text-[var(--text-muted)] hover:text-white underline">Edit</Link>
+              <div className="flex items-center gap-3">
+                {revealed[i] && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: matchBadge.color, color: '#080C14' }}>
+                    {matchBadge.label}
+                  </span>
+                )}
+                <Link href={`/scenarios/${res.key}`} className="text-xs text-[var(--text-muted)] hover:text-white underline">Edit</Link>
+              </div>
             </div>
 
             <div className="flex justify-between mb-4 gap-4">
@@ -427,6 +471,9 @@ export default function Results() {
                   <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>{myName}</p>
                 </div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}>{res.myAnswerText}</p>
+                {res.my2ndText && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>2nd: {res.my2ndText}</p>
+                )}
                 {res.correctGuess && <p className="text-xs font-bold text-purple-400 mt-2">🔮 Guessed Correctly</p>}
               </div>
               <div className="flex-1">
@@ -435,12 +482,12 @@ export default function Results() {
                   <p className="text-xs uppercase font-bold" style={{ color: 'var(--text-muted)' }}>{partnerName}</p>
                 </div>
                 {revealed[i] ? (
-                  <motion.p
-                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                    className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}
-                  >
-                    {res.partnerAnswerText}
-                  </motion.p>
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                    <p className="font-semibold text-sm" style={{ color: 'var(--accent-base)' }}>{res.partnerAnswerText}</p>
+                    {res.partner2ndText && (
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>2nd: {res.partner2ndText}</p>
+                    )}
+                  </motion.div>
                 ) : (
                   <button
                     onClick={() => setRevealed(p => ({ ...p, [i]: true }))}
@@ -470,7 +517,8 @@ export default function Results() {
               )}
             </AnimatePresence>
           </motion.div>
-        ))}
+          )
+        })}
       </div>
 
       {/* ── Empty state ── */}
