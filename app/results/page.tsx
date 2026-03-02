@@ -510,6 +510,15 @@ export default function Results() {
         </motion.div>
       )}
 
+      {totalAnswered > 0 && (
+        <motion.div
+          className="mt-14 text-center"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
+        >
+          <p className="text-3xl font-bold" style={{ color: 'var(--text-main)' }}>I love you. ❤️</p>
+        </motion.div>
+      )}
+
       <div className="mt-10 text-center">
         <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-60" style={{ color: 'var(--text-muted)' }}>← Back to Hub</Link>
       </div>

@@ -39,7 +39,7 @@ export const characters: Record<string, Character> = {
 export const scenarioData: Record<string, Scenario> = {
   'money-management': {
     name: 'Money Management', emoji: '💰',
-    situation: 'You just got married and need to set up your finances.',
+    situation: 'We just got married and need to set up our finances.',
     question: 'How should we handle our bank accounts?',
     options: [
       { id: 'joint', text: 'Everything goes into one joint account' },
@@ -51,19 +51,19 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'spending-limits': {
     name: 'Big Purchase', emoji: '🛍️',
-    situation: 'You are at Target and see the perfect throw pillows for $80.',
+    situation: 'You are out shopping at West Elm and spot the perfect throw pillows for $250.',
     question: 'What do you do?',
     options: [
       { id: 'text-first', text: 'Text and ask first' },
-      { id: 'buy-mention', text: 'Buy them, mention it later' },
-      { id: 'send-photo', text: 'Send a photo and wait for approval' },
-      { id: 'put-back', text: 'Put them back, not worth the conversation' },
-      { id: 'decide-together', text: 'Add to cart, we will decide together at checkout' }
+      { id: 'buy-mention', text: 'Buy them and tell them tonight' },
+      { id: 'send-photo', text: 'Send a photo — gauge the reaction' },
+      { id: 'put-back', text: 'Put them back, not worth $250' },
+      { id: 'bring-back', text: 'Come back together before deciding' }
     ]
   },
   'eating-out': {
     name: 'Eating Out', emoji: '🍜',
-    situation: 'It is Wednesday evening. Neither of you feel like cooking.',
+    situation: 'It is Wednesday evening. Neither of us feels like cooking.',
     question: 'What happens?',
     options: [
       { id: 'cook-anyway', text: 'We cook anyway, we always cook' },
@@ -99,7 +99,7 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'our-friends': {
     name: 'Friend Groups', emoji: '🥂',
-    situation: 'You have your college friends. She has her work friends. Nobody knows each other yet.',
+    situation: 'We each have our own friend groups — yours from college, hers from work. Nobody knows each other yet.',
     question: 'What is the plan?',
     options: [
       { id: 'merge', text: 'Throw a big party, merge everyone' },
@@ -111,7 +111,7 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'house-type': {
     name: 'Home Search', emoji: '🏠',
-    situation: 'You are apartment hunting together for the first time.',
+    situation: 'We are apartment hunting together for the first time.',
     question: 'What are we looking for?',
     options: [
       { id: 'one-bed', text: 'Cozy 1-bedroom, we do not need much space' },
@@ -171,7 +171,7 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'fighting': {
     name: 'After a Fight', emoji: '🌧️',
-    situation: 'You just had a big argument. It is still tense.',
+    situation: 'We just had a big argument. It is still tense.',
     question: 'What do you need right now?',
     options: [
       { id: 'space', text: 'Space to cool down alone' },
@@ -183,7 +183,7 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'friday-night': {
     name: 'Friday Night', emoji: '🎉',
-    situation: 'It is Friday at 6pm. You both just got home from a long work week.',
+    situation: 'It is Friday at 6pm. We just got home from a long work week.',
     question: 'What sounds good?',
     options: [
       { id: 'go-out', text: 'Get dressed up and go out for dinner' },
