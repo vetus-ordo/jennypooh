@@ -148,7 +148,7 @@ export default function JoinRoom() {
           <motion.div
             key="accept"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-md relative z-10"
+            className="w-full max-w-lg relative z-10"
           >
             <div className="glass-card p-8 md:p-10 text-center relative overflow-hidden">
 
@@ -166,7 +166,7 @@ export default function JoinRoom() {
                   <VideoCharacter
                     character="baymax"
                     variant="idle"
-                    size={96}
+                    size={140}
                     floatLoop
                     floatDelay={0}
                   />
@@ -185,7 +185,7 @@ export default function JoinRoom() {
                   <VideoCharacter
                     character="toothless"
                     variant="idle"
-                    size={96}
+                    size={140}
                     floatLoop
                     floatDelay={1.5}
                     mirrored

@@ -79,10 +79,10 @@ export const scenarioData: Record<string, Scenario> = {
     question: 'How often do we see John and Moonyoung?',
     options: [
       { id: 'weekly', text: 'Every week, they are family' },
-      { id: 'monthly', text: 'Once a month for dinner sounds good' },
+      { id: 'monthly', text: 'Once or twice a month for dinner' },
       { id: 'quarterly', text: 'Every few months is enough' },
-      { id: 'babysitting', text: 'Mainly when we need them to babysit' },
-      { id: 'vacation', text: 'We should vacation together sometime' }
+      { id: 'when-they-reach-out', text: 'Whenever they reach out, no set schedule' },
+      { id: 'more-involved', text: 'Often — plan trips and holidays together too' }
     ]
   },
   'our-friends': {
@@ -166,7 +166,7 @@ export const scenarioData: Record<string, Scenario> = {
       { id: 'talk-now', text: 'To talk it out immediately' },
       { id: 'physical', text: 'A hug, then we can talk' },
       { id: 'write', text: 'Time to write down my thoughts first' },
-      { id: 'move-on', text: 'To just move on and forget it' }
+      { id: 'makeup', text: 'Give it a minute, then incredible make-up sex' }
     ]
   },
   'friday-night': {

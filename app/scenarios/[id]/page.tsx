@@ -54,16 +54,18 @@ export default function ScenarioPage() {
   // 🚀 SYNC TO CLOUD
   const [saving, setSaving] = useState(false)
 
-  const handleSave = async () => {
+  const handleSave = async (imp?: number) => {
+    const finalImportance = imp ?? importance
     if (myAnswer && !saved && !saving) {
       triggerHaptic()
       setSaving(true)
+      setImportance(finalImportance)
 
       const payload = {
         myAnswer,
         mySecondChoice: mySecondChoice || null,
         guessedPartnerAnswer: guessedAnswer,
-        importance,
+        importance: finalImportance,
       }
 
       // 1. Save locally for instant UI reaction
@@ -149,7 +151,7 @@ export default function ScenarioPage() {
               ? scenario.question
               : step === 'guess'
               ? 'What do you think her top choice will be?'
-              : 'How important is this to you?'}
+              : 'How much does this one matter?'}
           </p>
         </div>
       </motion.header>
@@ -246,50 +248,27 @@ export default function ScenarioPage() {
         )}
 
         {step === 'stakes' && (
-          <motion.div key="stakes" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-12 text-center py-6">
-            {/* Dot selector */}
-            <div className="flex justify-center gap-4 mb-6">
-              {[1, 2, 3, 4, 5].map((level) => (
-                <button
-                  key={level}
-                  onClick={() => { setImportance(level); triggerHaptic() }}
-                  className="flex flex-col items-center gap-2 transition-all duration-200"
+          <motion.div key="stakes" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-12 py-4">
+            <div className="flex flex-col gap-3">
+              {([
+                { imp: 1, label: 'Just curious', sub: 'Low weight on scoring', color: 'var(--text-muted)', bg: 'var(--bg-card)', border: 'var(--border)' },
+                { imp: 3, label: 'This matters', sub: 'Standard weight', color: 'var(--accent-sage)', bg: 'var(--accent-glow)', border: 'var(--accent-sage)' },
+                { imp: 5, label: 'Dealbreaker', sub: 'Heavy weight on scoring', color: '#FF6B6B', bg: 'rgba(255, 107, 107, 0.08)', border: '#FF6B6B' },
+              ] as const).map((opt) => (
+                <motion.button
+                  key={opt.imp}
+                  onClick={() => handleSave(opt.imp)}
+                  disabled={saving}
+                  whileHover={{ scale: saving ? 1 : 1.015, x: saving ? 0 : 4 }}
+                  whileTap={{ scale: saving ? 1 : 0.985 }}
+                  className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200"
+                  style={{ borderColor: opt.border, background: opt.bg }}
                 >
-                  <motion.div
-                    animate={{
-                      scale: importance === level ? 1.3 : 1,
-                      opacity: importance >= level ? 1 : 0.3,
-                    }}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors duration-200"
-                    style={{
-                      background: importance === level
-                        ? (level >= 4 ? '#FF6B6B' : 'var(--accent-sage)')
-                        : importance >= level
-                        ? (level >= 4 ? 'rgba(255, 107, 107, 0.4)' : 'rgba(138, 188, 139, 0.4)')
-                        : 'rgba(128,128,128,0.15)',
-                      color: importance >= level ? '#fff' : 'var(--text-muted)',
-                      boxShadow: importance === level ? `0 0 12px ${level >= 4 ? 'rgba(255, 107, 107, 0.5)' : 'rgba(138, 188, 139, 0.5)'}` : 'none',
-                    }}
-                  >
-                    {level}
-                  </motion.div>
-                </button>
+                  <p className="font-bold text-base" style={{ color: opt.color }}>{opt.label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{opt.sub}</p>
+                </motion.button>
               ))}
             </div>
-            {/* Label */}
-            <motion.p
-              key={importance}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-sm font-bold uppercase tracking-wider"
-              style={{ color: importance >= 4 ? '#FF6B6B' : importance >= 3 ? 'var(--text-main)' : 'var(--text-muted)' }}
-            >
-              {importance <= 1 ? 'Not a big deal 🤷‍♂️'
-                : importance === 2 ? 'Slightly matters 🤷‍♂️'
-                : importance === 3 ? 'Important 🤔'
-                : importance === 4 ? 'Very important 🔥'
-                : 'Dealbreaker 🛑'}
-            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -312,17 +291,6 @@ export default function ScenarioPage() {
         <AnimatePresence mode="wait">
           {saved ? (
             <motion.div key="saved" initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-3xl">✅</motion.div>
-          ) : step === 'stakes' ? (
-            <motion.button
-              key="save"
-              onClick={handleSave}
-              disabled={saving}
-              whileHover={{ scale: saving ? 1 : 1.05 }}
-              whileTap={{ scale: saving ? 1 : 0.95 }}
-              className="btn-blueprint text-base"
-            >
-              {saving ? 'Syncing...' : 'Lock Protocol 🔒'}
-            </motion.button>
           ) : null}
         </AnimatePresence>
       </div>
