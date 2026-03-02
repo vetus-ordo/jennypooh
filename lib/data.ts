@@ -20,7 +20,7 @@ export const characters: Record<string, Character> = {
     id: 'baymax', name: 'Baymax', theme: 'baymax',
     reactions: {
       perfect: '✅ I am fully satisfied with this compatibility',
-      good: '💙 Treatment is working well — minor adjustments recommended',
+      good: '💙 Treatment is working well – minor adjustments recommended',
       mismatch: '⚠️ I detect a need for discussion. Initiating care protocol.',
       hilarious: '🤖 ...I am choosing not to process this data.'
     }
@@ -28,9 +28,9 @@ export const characters: Record<string, Character> = {
   toothless: {
     id: 'toothless', name: 'Toothless', theme: 'toothless',
     reactions: {
-      perfect: '🐉 *ecstatic tail wag* — PERFECT MATCH!',
-      good: '🤔 *curious head tilt* — pretty close!',
-      mismatch: '😐 *skeptical squint* — we need to talk...',
+      perfect: '🐉 *ecstatic tail wag* – PERFECT MATCH!',
+      good: '🤔 *curious head tilt* – pretty close!',
+      mismatch: '😐 *skeptical squint* – we need to talk...',
       hilarious: '😂 *falls off rock laughing*'
     }
   }
@@ -55,8 +55,8 @@ export const scenarioData: Record<string, Scenario> = {
     question: 'What do you do?',
     options: [
       { id: 'text-first', text: 'Text and ask first' },
-      { id: 'buy-mention', text: 'Buy them and tell them tonight' },
-      { id: 'send-photo', text: 'Send a photo — gauge the reaction' },
+      { id: 'buy-mention', text: 'Buy and mention it tonight' },
+      { id: 'send-photo', text: 'Send a photo – gauge the reaction' },
       { id: 'put-back', text: 'Put them back, not worth $250' },
       { id: 'bring-back', text: 'Come back together before deciding' }
     ]
@@ -87,8 +87,8 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'john-moonyoung': {
     name: 'John & Moonyoung', emoji: '👨‍👩‍👦',
-    situation: 'Your brother John texts asking if you want to grab dinner this weekend.',
-    question: 'How often do we see them?',
+    situation: 'John texts asking if we want to grab dinner this weekend.',
+    question: 'How often do we see John and Moonyoung?',
     options: [
       { id: 'weekly', text: 'Every week, they are family' },
       { id: 'monthly', text: 'Once a month for dinner sounds good' },
@@ -115,7 +115,7 @@ export const scenarioData: Record<string, Scenario> = {
     question: 'What happens?',
     options: [
       { id: 'first-sees', text: 'Whoever sees it first handles it' },
-      { id: 'take-turns', text: 'We take turns — it is only fair' },
+      { id: 'take-turns', text: 'We take turns – it is only fair' },
       { id: 'team-effort', text: 'Grab paper towels together, team effort' },
       { id: 'rock-paper', text: 'Rock paper scissors, loser cleans' },
       { id: 'pretend', text: 'Pretend we did not see it' }
@@ -135,25 +135,25 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'morning-routine': {
     name: 'Morning Chaos', emoji: '☀️',
-    situation: 'It is 6:30am. You need to leave by 7:45am. She tends to oversleep.',
+    situation: 'It is 6:30am. We need to be out the door by 7:45am. One of us is an early bird, the other loves to sleep in.',
     question: 'How do mornings work?',
     options: [
-      { id: 'together', text: 'We get ready together, I will help wake her' },
-      { id: 'separate', text: 'I leave first, she figures out her own routine' },
-      { id: 'multiple-alarms', text: 'Set multiple alarms for her, hope for the best' },
-      { id: 'one-wakes-other', text: 'I wake up first and gently wake her' },
+      { id: 'together', text: 'We get ready together and keep each other on track' },
+      { id: 'separate', text: 'The early bird heads out first, the other follows' },
+      { id: 'multiple-alarms', text: 'Multiple alarms, hope for the best' },
+      { id: 'one-wakes-other', text: 'Whoever is up first gently wakes the other' },
       { id: 'no-schedule', text: 'We have flexible schedules, no stress' }
     ]
   },
   'night-routine': {
     name: 'Bedtime', emoji: '🌙',
-    situation: 'It is 11pm. You are exhausted and in bed. She is still watching TV in the living room.',
-    question: 'What do you do?',
+    situation: 'It is 11pm. One of us is exhausted and already in bed. The other is still watching TV in the living room.',
+    question: 'What happens?',
     options: [
-      { id: 'wait', text: 'Stay up and wait for her' },
-      { id: 'ask', text: 'Go out and ask her to come to bed' },
-      { id: 'text', text: 'Text her from bed' },
-      { id: 'sleep', text: 'Just fall asleep, she will join when ready' },
+      { id: 'wait', text: 'Stay up and wait' },
+      { id: 'ask', text: 'Go out and ask to come to bed' },
+      { id: 'text', text: 'Send a text from the bedroom' },
+      { id: 'sleep', text: 'Just fall asleep, the other will join eventually' },
       { id: 'no-rule', text: 'We never go to bed at the same time anyway' }
     ]
   },
@@ -200,7 +200,7 @@ export const scenarioData: Record<string, Scenario> = {
     options: [
       { id: 'totally-fine', text: 'Totally fine, have fun!' },
       { id: 'heads-up', text: 'Fine, just give me a heads up first' },
-      { id: 'meet-them', text: 'I would like to meet them first' },
+      { id: 'meet-them', text: 'I would like to meet this person first' },
       { id: 'group-better', text: 'Could we make it a group thing?' },
       { id: 'uncomfortable', text: 'I would prefer you did not' }
     ]
@@ -211,18 +211,18 @@ export const scenarioData: Record<string, Scenario> = {
     question: 'How many kids do we want?',
     options: [
       { id: 'one', text: 'One and done' },
-      { id: 'two', text: 'Two — one of each ideally' },
+      { id: 'two', text: 'Two – one of each ideally' },
       { id: 'three-plus', text: 'Three or more, big family energy' },
       { id: 'not-sure', text: 'Not sure yet, we will revisit later' },
-      { id: 'none', text: 'No kids — we are the fun aunt and uncle' }
+      { id: 'none', text: 'No kids – we are the fun aunt and uncle' }
     ]
   },
   'school-choice': {
     name: 'School Decision', emoji: '🎒',
     situation: 'Our oldest just turned 5. Time to figure out school.',
-    question: 'Where are we sending them?',
+    question: 'Where does our kid go?',
     options: [
-      { id: 'public', text: 'Public school — we turned out fine' },
+      { id: 'public', text: 'Public school – we turned out fine' },
       { id: 'private', text: 'Private school, worth the investment' },
       { id: 'montessori', text: 'Montessori or something alternative' },
       { id: 'homeschool', text: 'Homeschool so we control the curriculum' },
@@ -231,13 +231,13 @@ export const scenarioData: Record<string, Scenario> = {
   },
   'bullying': {
     name: 'School Trouble', emoji: '😤',
-    situation: 'Our kid comes home upset — someone at school has been picking on them.',
+    situation: 'Our kid comes home from school upset – a classmate has been bullying.',
     question: 'What do we do?',
     options: [
       { id: 'go-to-school', text: 'Go to the school and handle it ourselves' },
       { id: 'call-parents', text: 'One of us calls the other parents directly' },
-      { id: 'taekwondo', text: 'Enroll them in taekwondo — build confidence' },
-      { id: 'coach-kid', text: 'Talk to our kid first, coach them through it' },
+      { id: 'taekwondo', text: 'Enroll our kid in taekwondo – build confidence' },
+      { id: 'coach-kid', text: 'Talk to our kid first and help work through it' },
       { id: 'let-school', text: 'Email the teacher and let the school handle it' }
     ]
   }
