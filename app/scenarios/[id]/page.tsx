@@ -21,6 +21,7 @@ export default function ScenarioPage() {
   // 3-Phase State
   const [step, setStep] = useState<'mine' | 'guess' | 'stakes'>('mine')
   const [myAnswer, setMyAnswer] = useState<string | null>(null)
+  const [mySecondChoice, setMySecondChoice] = useState<string | null>(null)
   const [guessedAnswer, setGuessedAnswer] = useState<string | null>(null)
   const [importance, setImportance] = useState(3)
 
@@ -38,6 +39,7 @@ export default function ScenarioPage() {
     if (s) {
       const parsed = JSON.parse(s)
       if (parsed.myAnswer) setMyAnswer(parsed.myAnswer)
+      if (parsed.mySecondChoice) setMySecondChoice(parsed.mySecondChoice)
       if (parsed.guessedPartnerAnswer) setGuessedAnswer(parsed.guessedPartnerAnswer)
       if (parsed.importance) setImportance(parsed.importance)
     }
@@ -59,6 +61,7 @@ export default function ScenarioPage() {
 
       const payload = {
         myAnswer,
+        mySecondChoice: mySecondChoice || null,
         guessedPartnerAnswer: guessedAnswer,
         importance,
       }
@@ -145,7 +148,7 @@ export default function ScenarioPage() {
             {step === 'mine'
               ? scenario.question
               : step === 'guess'
-              ? 'What do you think she will choose?'
+              ? 'What do you think her top choice will be?'
               : 'How important is this to you?'}
           </p>
         </div>
@@ -154,29 +157,57 @@ export default function ScenarioPage() {
       <AnimatePresence mode="wait">
         {step === 'mine' && (
           <motion.div key="mine" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3 mb-12">
+            <p className="text-xs uppercase font-bold tracking-widest text-center mb-4" style={{ color: 'var(--text-muted)' }}>
+              {!myAnswer ? 'Pick your top choice' : !mySecondChoice ? 'Now pick a backup' : 'Tap to change'}
+            </p>
             {scenario.options.map((option, i) => {
-              const isSelected = myAnswer === option.id
+              const isFirst = myAnswer === option.id
+              const isSecond = mySecondChoice === option.id
+              const handlePick = () => {
+                triggerHaptic()
+                if (isFirst) {
+                  // Deselect 1st → clear both
+                  setMyAnswer(null)
+                  setMySecondChoice(null)
+                } else if (isSecond) {
+                  // Deselect 2nd only
+                  setMySecondChoice(null)
+                } else if (!myAnswer) {
+                  // Nothing selected yet → becomes 1st
+                  setMyAnswer(option.id)
+                } else {
+                  // 1st exists, pick 2nd → auto-advance
+                  setMySecondChoice(option.id)
+                  setTimeout(() => setStep('guess'), 500)
+                }
+              }
               return (
                 <motion.button
                   key={option.id}
-                  onClick={() => { setMyAnswer(option.id); triggerHaptic(); setTimeout(() => setStep('guess'), 400) }}
+                  onClick={handlePick}
                   whileHover={{ scale: 1.015, x: 4 }} whileTap={{ scale: 0.985 }}
                   className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4"
-                  style={isSelected
+                  style={isFirst
                     ? { borderColor: 'var(--accent-sage)', background: 'var(--accent-glow)', boxShadow: `0 0 0 3px var(--accent-glow), var(--card-shadow)` }
+                    : isSecond
+                    ? { borderColor: 'rgba(182, 138, 255, 0.6)', background: 'rgba(182, 138, 255, 0.1)', boxShadow: `0 0 0 2px rgba(182, 138, 255, 0.15)` }
                     : { borderColor: 'var(--border)', background: 'var(--bg-card)' }
                   }
                 >
                   <span
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all duration-200"
-                    style={isSelected
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all duration-200 relative"
+                    style={isFirst
                       ? { background: 'var(--accent-sage)', color: myCharacter === 'toothless' ? '#080C14' : 'white' }
+                      : isSecond
+                      ? { background: 'rgba(182, 138, 255, 0.7)', color: '#fff' }
                       : { background: 'rgba(128,128,128,0.12)', color: 'var(--text-muted)' }
                     }
                   >
                     {OPTION_LETTERS[i]}
                   </span>
-                  <p className="font-medium" style={{ color: 'var(--text-main)' }}>{option.text}</p>
+                  <p className="font-medium flex-1" style={{ color: 'var(--text-main)' }}>{option.text}</p>
+                  {isFirst && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-sage)', color: myCharacter === 'toothless' ? '#080C14' : 'white' }}>1st</span>}
+                  {isSecond && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: 'rgba(182, 138, 255, 0.7)', color: '#fff' }}>2nd</span>}
                 </motion.button>
               )
             })}
