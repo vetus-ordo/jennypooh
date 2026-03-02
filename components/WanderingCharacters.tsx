@@ -210,10 +210,10 @@ export default function WanderingCharacters() {
   if (disabled) return null
 
   // Responsive sizes — smaller on mobile
-  const BAYMAX_SIZE     = isMobile ? 45 : 70
-  const TOOTHLESS_SIZE  = isMobile ? 40 : 64
-  const LIGHT_FURY_SIZE = isMobile ? 38 : 60
-  const PEEK_SIZE       = isMobile ? 44 : 64
+  const BAYMAX_SIZE     = isMobile ? 90  : 140
+  const TOOTHLESS_SIZE  = isMobile ? 80  : 128
+  const LIGHT_FURY_SIZE = isMobile ? 76  : 120
+  const PEEK_SIZE       = isMobile ? 88  : 128
 
   return (
     <div
