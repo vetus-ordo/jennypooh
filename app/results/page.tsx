@@ -58,10 +58,10 @@ function Confetti({ active }: { active: boolean }) {
 
 function ScoreTierBanner({ score }: { score: number }) {
   const [label, emoji, tierClass] =
-    score >= 90 ? ['Soulmates',          '💍', 'tier-soulmates']
-    : score >= 70 ? ['Pretty Aligned',   '💚', 'tier-aligned']
-    : score >= 50 ? ['Work in Progress', '🛠️', 'tier-progress']
-    : ['Opposites Attract',              '⚡', 'tier-opposites']
+    score >= 90 ? ['Soulmates',                    '💍', 'tier-soulmates']
+    : score >= 70 ? ['Pretty Aligned',             '💚', 'tier-aligned']
+    : score >= 50 ? ['Growing Together',           '🌱', 'tier-progress']
+    : ['We Balance Each Other Out',                '💜', 'tier-opposites']
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
@@ -134,24 +134,22 @@ function DuoReaction({ score, ready }: { score: number; ready: boolean }) {
     )
   }
 
-  // ≥50 — Work in Progress: baymax-wave.png + toothless-fly.gif
+  // ≥50 — Growing Together: baymax-wave.png + toothless-fly.gif
   if (score >= 50) {
     return (
       <div className="flex items-center justify-center gap-8 mb-4">
         <CharacterDisplay character="baymax" variant="wave" size={88} floatLoop floatDelay={0} />
-        <span className="text-4xl">🛠️</span>
+        <span className="text-4xl">🌱</span>
         <CharacterDisplay character="toothless" variant="fly" size={88} floatLoop floatDelay={1.5} mirrored />
       </div>
     )
   }
 
-  // <50 — Opposites Attract: baymax-soccer.mp4 + toothless-smack.mp4
-  // Videos fit the playful mismatch energy; mirrored prop on VideoCharacter
-  // replaces the previous caller-side <div style={scaleX(-1)}> workaround.
+  // <50 — We Balance Each Other Out: baymax-soccer.mp4 + toothless-smack.mp4
   return (
     <div className="flex items-center justify-center gap-8 mb-4">
       <VideoCharacter character="baymax" variant="soccer" size={88} floatLoop floatDelay={0} />
-      <span className="text-4xl">⚡</span>
+      <span className="text-4xl">💜</span>
       <VideoCharacter character="toothless" variant="smack" size={88} floatLoop floatDelay={1.5} mirrored />
     </div>
   )
@@ -338,8 +336,8 @@ export default function Results() {
             <DuoReaction score={weightedScorePercent} ready={scoreReady} />
           </motion.div>
         </AnimatePresence>
-        <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Compatibility Report</h1>
-        <p className="italic" style={{ color: 'var(--text-muted)' }}>{myName} &amp; {partnerName}</p>
+        <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>{myName} &amp; {partnerName}</h1>
+        <p className="italic" style={{ color: 'var(--text-muted)' }}>How well do we really know each other?</p>
       </motion.header>
 
       {/* ── Waiting banner ── */}
@@ -379,7 +377,7 @@ export default function Results() {
                 </div>
                 <ScoreTierBanner score={weightedScorePercent} />
                 <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {matches} perfect {matches === 1 ? 'match' : 'matches'} • {report.filter((r: any) => r?.matchLevel === 'cross' || r?.matchLevel === 'backup').length} partial • Weighted by Importance
+                  {matches} perfect {matches === 1 ? 'match' : 'matches'} out of {totalAnswered} scenarios
                 </p>
               </motion.div>
             )}
@@ -609,38 +607,64 @@ export default function Results() {
         </div>
       )}
 
-      {/* ── Share card ── */}
+      {/* ── Warm closing + share card ── */}
       {totalAnswered > 0 && (
         <motion.div
-          className="mt-14 rounded-3xl overflow-hidden glass-card"
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+        >
+          <p className="text-lg leading-relaxed mb-2" style={{ color: 'var(--text-muted)' }}>
+            The number doesn&apos;t matter as much as this does –
+          </p>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text-main)' }}>
+            we showed up, answered honestly, and chose each other anyway.
+          </p>
+        </motion.div>
+      )}
+
+      {totalAnswered > 0 && (
+        <motion.div
+          className="mt-10 rounded-3xl overflow-hidden glass-card"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
         >
-          <div className="p-8 text-center bg-gradient-to-b from-transparent to-black/20">
-            <p className="text-xs uppercase font-bold tracking-widest mb-5" style={{ color: 'var(--text-muted)' }}>Share Your Score</p>
-            <div className="flex items-center justify-center gap-6 mb-3">
-              <Image src="/baymax.png" alt="Baymax" width={56} height={56} className="object-contain drop-shadow-xl" />
-              <span className="text-3xl">💌</span>
-              <Image src="/toothless.png" alt="Toothless" width={56} height={56} className="object-contain drop-shadow-xl" style={{ transform: 'scaleX(-1)' }} />
+          <div className="relative">
+            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-3xl">
+              <Image
+                src="/us.png"
+                alt={`${myName} & ${partnerName}`}
+                fill
+                className="object-cover"
+                style={{ filter: 'brightness(0.7)' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
+                <div className="text-7xl font-bold mb-1" style={{ color: 'var(--accent-base)', textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>{weightedScorePercent}%</div>
+                <div className="text-2xl font-bold mb-1 text-white" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>{myName} &amp; {partnerName}</div>
+              </div>
             </div>
-            <div className="text-6xl font-bold mb-2" style={{ color: 'var(--accent-base)' }}>{weightedScorePercent}%</div>
-            <div className="text-xl font-bold mb-1" style={{ color: 'var(--text-main)' }}>{myName} &amp; {partnerName}</div>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>jennypooh · Life Scenarios</p>
+            <div className="p-5 text-center" style={{ background: 'var(--bg-card)' }}>
+              <div className="flex items-center justify-center gap-4">
+                <Image src="/baymax.png" alt="Baymax" width={32} height={32} className="object-contain drop-shadow-lg" />
+                <span className="text-sm font-bold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>jennypooh</span>
+                <Image src="/toothless.png" alt="Toothless" width={32} height={32} className="object-contain drop-shadow-lg" style={{ transform: 'scaleX(-1)' }} />
+              </div>
+            </div>
           </div>
         </motion.div>
       )}
 
+      <div className="mt-8 text-center">
+        <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-60 text-sm" style={{ color: 'var(--text-muted)' }}>← Back to Hub</Link>
+      </div>
+
       {totalAnswered > 0 && (
         <motion.div
-          className="mt-14 text-center"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
+          className="mt-12 mb-4 text-center"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}
         >
-          <p className="text-3xl font-bold" style={{ color: 'var(--text-main)' }}>I love you. ❤️</p>
+          <p className="text-3xl font-bold" style={{ color: 'var(--text-main)' }}>I love you, {partnerName}. ❤️</p>
         </motion.div>
       )}
-
-      <div className="mt-10 text-center">
-        <Link href="/scenarios" className="font-bold transition-opacity hover:opacity-60" style={{ color: 'var(--text-muted)' }}>← Back to Hub</Link>
-      </div>
     </main>
   )
 }

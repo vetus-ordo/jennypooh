@@ -53,8 +53,8 @@ export default function Scenarios() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-14">
       <motion.header className="text-center mb-10" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-5xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>The Real Questions</h1>
-        <p className="text-xl italic" style={{ color: 'var(--text-muted)' }}>Let's see how aligned we really are.</p>
+        <h1 className="text-5xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Do We Actually Agree?</h1>
+        <p className="text-xl italic" style={{ color: 'var(--text-muted)' }}>There&apos;s only one way to find out.</p>
       </motion.header>
 
       <motion.div
