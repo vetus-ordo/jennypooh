@@ -2,7 +2,7 @@
 
 import SpriteSheet from './SpriteSheet'
 
-// Baymax walk sheet: 151 frames at 120×68 each
+// Baymax walk sheet: 151 frames at 240×136 each (2× upscaled)
 interface Props {
   size?: number
   mirrored?: boolean
@@ -21,8 +21,8 @@ export default function BaymaxSprite({
   return (
     <SpriteSheet
       src="/baymax-walk-sheet.png"
-      frameWidth={120}
-      frameHeight={68}
+      frameWidth={240}
+      frameHeight={136}
       frameCount={151}
       fps={15}
       size={size}
